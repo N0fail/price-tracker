@@ -1,16 +1,19 @@
 package main
 
 import (
-	"fmt"
 	tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api"
-	"gitlab.ozon.dev/N0fail/price-tracker/config"
+	"github.com/pkg/errors"
 	"gitlab.ozon.dev/N0fail/price-tracker/internal/commander"
 	"log"
+	"os"
 )
 
 func main() {
-	fmt.Println()
-	bot, error := tgbotapi.NewBotAPI(config.ApiKey)
+	apiKey, exists := os.LookupEnv("PriceTrackerApiKey")
+	if !exists {
+		log.Panic(errors.New("PriceTrackerApiKey environment variable expected\nuse `export PriceTrackerApiKey=` to set your bot ApiKey"))
+	}
+	bot, error := tgbotapi.NewBotAPI(apiKey)
 	if error != nil {
 		log.Panic(error.Error())
 	}

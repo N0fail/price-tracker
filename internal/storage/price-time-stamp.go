@@ -2,10 +2,9 @@ package storage
 
 import (
 	"fmt"
+	"gitlab.ozon.dev/N0fail/price-tracker/config"
 	"time"
 )
-
-const DateFormat = "2 Jan 2006 15:04"
 
 type PriceTimeStamp struct {
 	price uint64
@@ -36,5 +35,5 @@ func (p PriceTimeStamp) GetDate() time.Time {
 }
 
 func (p PriceTimeStamp) String() string {
-	return fmt.Sprintf("%v: %v", p.date.Format(DateFormat), p.price)
+	return fmt.Sprintf("%v: %v", p.date.Format(config.DateFormat), p.price)
 }

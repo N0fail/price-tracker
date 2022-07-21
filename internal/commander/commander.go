@@ -5,8 +5,6 @@ import (
 	"log"
 )
 
-const CommandDelimeter = "_"
-
 type Commander struct {
 	bot *tgbotapi.BotAPI
 }

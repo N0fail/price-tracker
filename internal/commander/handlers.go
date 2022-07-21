@@ -3,6 +3,7 @@ package commander
 import (
 	"fmt"
 	"github.com/pkg/errors"
+	"gitlab.ozon.dev/N0fail/price-tracker/config"
 	"gitlab.ozon.dev/N0fail/price-tracker/internal/storage"
 	"strconv"
 	"strings"
@@ -26,7 +27,7 @@ var handlers = make(map[string]Handler, 0)
 func initHandlers() {
 	NewHandler("help", "print available commands", func(string) string {
 		listStr := make([]string, 0, len(handlers)+1)
-		listStr = append(listStr, "you can pass arguments using `"+CommandDelimeter+"` delimeter\n example will pass arg1 and arg2 to cmd: /cmd arg1"+CommandDelimeter+"arg2")
+		listStr = append(listStr, "you can pass arguments using `"+config.CommandDelimeter+"` delimeter\n example will pass arg1 and arg2 to cmd: /cmd arg1"+config.CommandDelimeter+"arg2")
 		for _, handler := range handlers {
 			listStr = append(listStr, handler.String())
 		}
@@ -45,8 +46,8 @@ func initHandlers() {
 		return strings.Join(res, "\n")
 	})
 
-	NewHandler("add", "adds product to track, args:<code>"+CommandDelimeter+"<name>", func(cmdArgs string) string {
-		params := strings.Split(cmdArgs, CommandDelimeter)
+	NewHandler("add", "adds product to track, args:<code>"+config.CommandDelimeter+"<name>", func(cmdArgs string) string {
+		params := strings.Split(cmdArgs, config.CommandDelimeter)
 		if len(params) != 2 {
 			return "incorrect number of arguments"
 		}
@@ -69,8 +70,8 @@ func initHandlers() {
 		return fmt.Sprintf("product %v was successfully removed", cmdArgs)
 	})
 
-	NewHandler("add_price", "adds price to product track, args:<code>"+CommandDelimeter+"<date>"+CommandDelimeter+"<price>\ndate format: "+storage.DateFormat, func(cmdArgs string) string {
-		params := strings.Split(cmdArgs, CommandDelimeter)
+	NewHandler("add_price", "adds price to product track, args:<code>"+config.CommandDelimeter+"<date>"+config.CommandDelimeter+"<price>\ndate format: "+config.DateFormat, func(cmdArgs string) string {
+		params := strings.Split(cmdArgs, config.CommandDelimeter)
 		if len(params) != 3 {
 			return "incorrect number of arguments"
 		}
@@ -79,7 +80,7 @@ func initHandlers() {
 		if err != nil {
 			return err.Error()
 		}
-		dateTime, err := time.Parse(storage.DateFormat, date)
+		dateTime, err := time.Parse(config.DateFormat, date)
 		if err != nil {
 			return err.Error()
 		}

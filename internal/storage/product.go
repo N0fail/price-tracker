@@ -3,11 +3,10 @@ package storage
 import (
 	"fmt"
 	"github.com/pkg/errors"
+	"gitlab.ozon.dev/N0fail/price-tracker/config"
 )
 
 var NameTooShortError = errors.New("name is too short")
-
-const minNameLength = 4
 
 type Product struct {
 	code         string
@@ -28,7 +27,7 @@ func NewProduct(code, name string) (*Product, error) {
 }
 
 func (p *Product) SetName(name string) error {
-	if len(name) < minNameLength {
+	if len(name) < config.MinNameLength {
 		return errors.Wrap(NameTooShortError, name)
 	}
 	p.name = name
