@@ -2,6 +2,7 @@ package commander
 
 import (
 	tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api"
+	"gitlab.ozon.dev/N0fail/price-tracker/config"
 	"log"
 )
 
@@ -20,7 +21,7 @@ func (c *Commander) Run() {
 	bot := c.bot
 	log.Printf("Authorized on account %s", bot.Self.UserName)
 	u := tgbotapi.NewUpdate(0)
-	u.Timeout = 60
+	u.Timeout = config.GetUpdatesTimeout
 
 	updates, _ := bot.GetUpdatesChan(u)
 

@@ -7,18 +7,18 @@ import (
 )
 
 type PriceTimeStamp struct {
-	price uint64
+	price float64
 	date  time.Time
 }
 
-func NewPriceTimeStamp(price uint64, date time.Time) *PriceTimeStamp {
+func NewPriceTimeStamp(price float64, date time.Time) *PriceTimeStamp {
 	return &PriceTimeStamp{
 		price: price,
 		date:  date,
 	}
 }
 
-func (p *PriceTimeStamp) SetPrice(newPrice uint64) {
+func (p *PriceTimeStamp) SetPrice(newPrice float64) {
 	p.price = newPrice
 }
 
@@ -26,7 +26,7 @@ func (p *PriceTimeStamp) SetDate(newDate time.Time) {
 	p.date = newDate
 }
 
-func (p PriceTimeStamp) GetPrice() uint64 {
+func (p PriceTimeStamp) GetPrice() float64 {
 	return p.price
 }
 

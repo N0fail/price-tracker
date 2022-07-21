@@ -15,7 +15,7 @@ func main() {
 	}
 	bot, error := tgbotapi.NewBotAPI(apiKey)
 	if error != nil {
-		log.Panic(error.Error())
+		log.Fatal(error.Error())
 	}
 	myCommander := commander.Init(bot)
 	myCommander.Run()

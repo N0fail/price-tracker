@@ -5,6 +5,7 @@ import (
 	"github.com/pkg/errors"
 	"gitlab.ozon.dev/N0fail/price-tracker/config"
 	"gitlab.ozon.dev/N0fail/price-tracker/internal/storage"
+	"log"
 	"strconv"
 	"strings"
 	"time"
@@ -82,13 +83,18 @@ func initHandlers() {
 		}
 		dateTime, err := time.Parse(config.DateFormat, date)
 		if err != nil {
-			return err.Error()
+			log.Print(err.Error())
+			return "Error in date format, correct example: " + config.DateFormat
 		}
-		priceUint, err := strconv.ParseUint(price, 10, 64)
+		priceFloat, err := strconv.ParseFloat(price, 64)
 		if err != nil {
-			return err.Error()
+			log.Print(err.Error())
+			return "Error in price format, correct example: 123.45"
 		}
-		stamp := storage.NewPriceTimeStamp(priceUint, dateTime)
+		if priceFloat < 0 {
+			return "Price should be positive"
+		}
+		stamp := storage.NewPriceTimeStamp(priceFloat, dateTime)
 		product.AddPriceTimeStamp(stamp)
 		return fmt.Sprintf("Price %v was successfully added for product %v", stamp.String(), product.GetName())
 	})
