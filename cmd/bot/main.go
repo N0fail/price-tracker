@@ -11,7 +11,7 @@ import (
 func main() {
 	apiKey, exists := os.LookupEnv("PriceTrackerApiKey")
 	if !exists {
-		log.Panic(errors.New("PriceTrackerApiKey environment variable expected\nuse `export PriceTrackerApiKey=` to set your bot ApiKey"))
+		log.Fatal(errors.New("PriceTrackerApiKey environment variable expected\nuse `export PriceTrackerApiKey=` to set your bot ApiKey"))
 	}
 	bot, error := tgbotapi.NewBotAPI(apiKey)
 	if error != nil {
