@@ -5,10 +5,9 @@ import (
 )
 
 type Interface interface {
-	ProductList() []models.Product
+	ProductList() []models.ProductSnapshot
 	ProductCreate(p models.Product) error
-	ProductGet(code string) (models.Product, error)
 	ProductDelete(code string) error
-	ProductUpdate(p models.Product) error
-	PriceTimeStampAdd(product models.Product, priceTimeStamp models.PriceTimeStamp) error
+	AddPriceTimeStamp(code string, priceTimeStamp models.PriceTimeStamp) error
+	FullHistory(code string) (models.PriceHistory, error)
 }

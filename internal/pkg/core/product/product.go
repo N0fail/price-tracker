@@ -15,11 +15,10 @@ var (
 
 type Interface interface {
 	Create(product models.Product) error
-	Update(product models.Product) error
 	Delete(code string) error
-	Get(code string) (models.Product, error)
-	List() []models.Product
-	AddPriceTimeStamp(product models.Product, priceTimeStamp models.PriceTimeStamp) error
+	List() []models.ProductSnapshot
+	AddPriceTimeStamp(code string, priceTimeStamp models.PriceTimeStamp) error
+	FullHistory(code string) (models.PriceHistory, error)
 }
 
 func New() Interface {
@@ -40,25 +39,21 @@ func (c *core) Create(product models.Product) error {
 	return c.cache.ProductCreate(product)
 }
 
-func (c *core) Update(product models.Product) error {
-	return c.cache.ProductUpdate(product)
-}
-
 func (c *core) Delete(code string) error {
 	return c.cache.ProductDelete(code)
 }
 
-func (c *core) Get(code string) (models.Product, error) {
-	return c.cache.ProductGet(code)
-}
-
-func (c *core) List() []models.Product {
+func (c *core) List() []models.ProductSnapshot {
 	return c.cache.ProductList()
 }
 
-func (c *core) AddPriceTimeStamp(product models.Product, priceTimeStamp models.PriceTimeStamp) error {
+func (c *core) AddPriceTimeStamp(code string, priceTimeStamp models.PriceTimeStamp) error {
 	if priceTimeStamp.Price < 0 {
 		return ErrNegativePrice
 	}
-	return c.cache.PriceTimeStampAdd(product, priceTimeStamp)
+	return c.cache.AddPriceTimeStamp(code, priceTimeStamp)
+}
+
+func (c *core) FullHistory(code string) (models.PriceHistory, error) {
+	return c.cache.FullHistory(code)
 }

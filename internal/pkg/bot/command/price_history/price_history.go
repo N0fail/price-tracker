@@ -16,11 +16,11 @@ type command struct {
 }
 
 func (c *command) Process(cmdArgs string) string {
-	product, err := c.product.Get(cmdArgs)
+	history, err := c.product.FullHistory(cmdArgs)
 	if err != nil {
 		return err.Error()
 	}
-	return product.FullHistoryString()
+	return history.String()
 }
 
 func (c *command) Name() string {

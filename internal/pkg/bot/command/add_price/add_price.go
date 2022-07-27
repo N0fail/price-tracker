@@ -25,13 +25,9 @@ type command struct {
 func (c *command) Process(cmdArgs string) string {
 	params := strings.Split(cmdArgs, config.CommandDelimeter)
 	if len(params) != 3 {
-		return "incorrect number of arguments"
+		return "incorrect number of arguments\n" + c.Help()
 	}
 	code, date, price := params[0], params[1], params[2]
-	product, err := c.product.Get(code)
-	if err != nil {
-		return err.Error()
-	}
 	dateTime, err := time.Parse(config.DateFormat, date)
 	if err != nil {
 		log.Print(err.Error())
@@ -46,11 +42,11 @@ func (c *command) Process(cmdArgs string) string {
 		Price: priceFloat,
 		Date:  dateTime,
 	}
-	err = c.product.AddPriceTimeStamp(product, priceTimeStamp)
+	err = c.product.AddPriceTimeStamp(code, priceTimeStamp)
 	if err != nil {
 		return err.Error()
 	}
-	return fmt.Sprintf("Price %v was successfully added for product %v", priceTimeStamp.String(), product.Name)
+	return fmt.Sprintf("Price %v was successfully added for product %v", priceTimeStamp.String(), code)
 }
 
 func (c *command) Name() string {

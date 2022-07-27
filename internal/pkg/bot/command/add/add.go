@@ -22,7 +22,7 @@ type command struct {
 func (c *command) Process(cmdArgs string) string {
 	params := strings.Split(cmdArgs, config.CommandDelimeter)
 	if len(params) != 2 {
-		return "incorrect number of arguments"
+		return "incorrect number of arguments\n" + c.Help()
 	}
 
 	err := c.product.Create(models.Product{

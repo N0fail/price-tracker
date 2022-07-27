@@ -1,34 +1,31 @@
 package models
 
 import (
-	"sort"
 	"strings"
 )
 
 type PriceHistory []PriceTimeStamp
 
-func (p PriceHistory) GetSorted() PriceHistory {
-	result := make(PriceHistory, len(p), len(p))
-	copy(result, p)
-	sort.Stable(result)
-	return result
+func (p PriceHistory) Copy() PriceHistory {
+	res := make(PriceHistory, len(p), len(p))
+	copy(res, p)
+	return res
+}
+
+func (p PriceHistory) GetLast() PriceTimeStamp {
+	if p.Len() == 0 {
+		return emptyPriceTimeStamp
+	}
+
+	return p[p.Len()-1]
 }
 
 func (p PriceHistory) String() string {
-	if len(p) == 0 {
-		return "no price records"
-	}
-	sorted := p.GetSorted()
-	return "last price: " + sorted[len(sorted)-1].String()
-}
-
-func (p PriceHistory) FullHistoryString() string {
 	if p.Len() == 0 {
-		return "no price records"
+		return emptyPriceTimeStamp.String()
 	}
-	sorted := p.GetSorted()
-	stringData := make([]string, 0, len(sorted))
-	for _, priceTimeStamp := range sorted {
+	stringData := make([]string, 0, p.Len())
+	for _, priceTimeStamp := range p {
 		stringData = append(stringData, priceTimeStamp.String())
 	}
 	return strings.Join(stringData, "\n")
