@@ -30,6 +30,8 @@ func (i *implementation) ProductCreate(ctx context.Context, in *pb.ProductCreate
 	}); err != nil {
 		if errors.Is(err, error_codes.ErrNameTooShortError) {
 			return nil, status.Error(codes.InvalidArgument, err.Error())
+		} else if errors.Is(err, error_codes.ErrProductExists) {
+			return nil, status.Error(codes.AlreadyExists, err.Error())
 		}
 		return nil, status.Error(codes.Internal, err.Error())
 	}
@@ -41,13 +43,18 @@ func (i *implementation) ProductList(context.Context, *pb.ProductListRequest) (*
 
 	result := make([]*pb.ProductSnapShot, 0, len(productSnapShots))
 	for _, productSnapShot := range productSnapShots {
-		result = append(result, &pb.ProductSnapShot{
-			Code: productSnapShot.Code,
-			Name: productSnapShot.Name,
-			PriceTimeStamp: &pb.PriceTimeStamp{
+		var priceTimeStamp *pb.PriceTimeStamp
+		if !productSnapShot.LastPrice.IsEmpty() {
+			priceTimeStamp = &pb.PriceTimeStamp{
 				Price: productSnapShot.LastPrice.Price,
 				Ts:    productSnapShot.LastPrice.Date.Unix(),
-			},
+			}
+		}
+
+		result = append(result, &pb.ProductSnapShot{
+			Code:           productSnapShot.Code,
+			Name:           productSnapShot.Name,
+			PriceTimeStamp: priceTimeStamp,
 		})
 	}
 

@@ -9,12 +9,15 @@ import (
 	"sync"
 )
 
+const poolSize = 10
+
 func New() cachePkg.Interface {
 	return &cache{
 		muP:          sync.RWMutex{},
 		product:      make(map[string]models.Product, 0),
 		muH:          sync.RWMutex{},
 		priceHistory: make(map[string]models.PriceHistory, 0),
+		poolCh:       make(chan struct{}, poolSize),
 	}
 }
 
@@ -23,9 +26,14 @@ type cache struct {
 	product      map[string]models.Product
 	muH          sync.RWMutex
 	priceHistory map[string]models.PriceHistory
+	poolCh       chan struct{}
 }
 
 func (c *cache) ProductList() []models.ProductSnapshot {
+	c.poolCh <- struct{}{}
+	defer func() {
+		<-c.poolCh
+	}()
 	c.muP.RLock()
 	defer c.muP.RUnlock()
 	c.muH.RLock()
@@ -43,6 +51,10 @@ func (c *cache) ProductList() []models.ProductSnapshot {
 }
 
 func (c *cache) ProductCreate(p models.Product) error {
+	c.poolCh <- struct{}{}
+	defer func() {
+		<-c.poolCh
+	}()
 	c.muP.Lock()
 	defer c.muP.Unlock()
 	c.muH.RLock()
@@ -57,6 +69,10 @@ func (c *cache) ProductCreate(p models.Product) error {
 }
 
 func (c *cache) ProductDelete(code string) error {
+	c.poolCh <- struct{}{}
+	defer func() {
+		<-c.poolCh
+	}()
 	c.muP.Lock()
 	defer c.muP.Unlock()
 	c.muH.RLock()
@@ -71,6 +87,10 @@ func (c *cache) ProductDelete(code string) error {
 }
 
 func (c *cache) AddPriceTimeStamp(code string, priceTimeStamp models.PriceTimeStamp) error {
+	c.poolCh <- struct{}{}
+	defer func() {
+		<-c.poolCh
+	}()
 	c.muH.Lock()
 	defer c.muH.Unlock()
 
@@ -86,6 +106,10 @@ func (c *cache) AddPriceTimeStamp(code string, priceTimeStamp models.PriceTimeSt
 }
 
 func (c *cache) FullHistory(code string) (models.PriceHistory, error) {
+	c.poolCh <- struct{}{}
+	defer func() {
+		<-c.poolCh
+	}()
 	c.muH.RLock()
 	defer c.muH.RUnlock()
 
