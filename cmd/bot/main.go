@@ -16,7 +16,10 @@ func main() {
 	{
 		product = productPkg.New()
 	}
+	runGRPCServer(product)
+}
 
+func runBot(product productPkg.Interface) {
 	var bot botPkg.Interface
 	{
 		bot = botPkg.MustNew()

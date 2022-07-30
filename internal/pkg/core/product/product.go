@@ -5,12 +5,8 @@ import (
 	"gitlab.ozon.dev/N0fail/price-tracker/internal/config"
 	cachePkg "gitlab.ozon.dev/N0fail/price-tracker/internal/pkg/core/product/cache"
 	cacheLocalPkg "gitlab.ozon.dev/N0fail/price-tracker/internal/pkg/core/product/cache/local"
+	"gitlab.ozon.dev/N0fail/price-tracker/internal/pkg/core/product/error_codes"
 	"gitlab.ozon.dev/N0fail/price-tracker/internal/pkg/core/product/models"
-)
-
-var (
-	ErrNameTooShortError = errors.New("name is too short")
-	ErrNegativePrice     = errors.New("price should be positive")
 )
 
 type Interface interface {
@@ -33,7 +29,7 @@ type core struct {
 
 func (c *core) Create(product models.Product) error {
 	if len(product.Name) < config.MinNameLength {
-		return errors.Wrap(ErrNameTooShortError, product.Name)
+		return errors.Wrap(error_codes.ErrNameTooShortError, product.Name)
 	}
 
 	return c.cache.ProductCreate(product)
@@ -49,7 +45,7 @@ func (c *core) List() []models.ProductSnapshot {
 
 func (c *core) AddPriceTimeStamp(code string, priceTimeStamp models.PriceTimeStamp) error {
 	if priceTimeStamp.Price < 0 {
-		return ErrNegativePrice
+		return error_codes.ErrNegativePrice
 	}
 	return c.cache.AddPriceTimeStamp(code, priceTimeStamp)
 }

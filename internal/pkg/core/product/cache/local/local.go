@@ -3,14 +3,10 @@ package local
 import (
 	"github.com/pkg/errors"
 	cachePkg "gitlab.ozon.dev/N0fail/price-tracker/internal/pkg/core/product/cache"
+	"gitlab.ozon.dev/N0fail/price-tracker/internal/pkg/core/product/error_codes"
 	"gitlab.ozon.dev/N0fail/price-tracker/internal/pkg/core/product/models"
 	"sort"
 	"sync"
-)
-
-var (
-	ErrProductNotExist = errors.New("product does not exist")
-	ErrProductExists   = errors.New("product exists")
 )
 
 func New() cachePkg.Interface {
@@ -53,7 +49,7 @@ func (c *cache) ProductCreate(p models.Product) error {
 	defer c.muH.RUnlock()
 
 	if _, ok := c.product[p.Code]; ok {
-		return errors.Wrap(ErrProductExists, p.Code)
+		return errors.Wrap(error_codes.ErrProductExists, p.Code)
 	}
 	c.product[p.Code] = p
 	c.priceHistory[p.Code] = make(models.PriceHistory, 0)
@@ -67,7 +63,7 @@ func (c *cache) ProductDelete(code string) error {
 	defer c.muH.RUnlock()
 
 	if _, ok := c.product[code]; !ok {
-		return errors.Wrap(ErrProductNotExist, code)
+		return errors.Wrap(error_codes.ErrProductNotExist, code)
 	}
 	delete(c.product, code)
 	delete(c.priceHistory, code)
@@ -79,7 +75,7 @@ func (c *cache) AddPriceTimeStamp(code string, priceTimeStamp models.PriceTimeSt
 	defer c.muH.Unlock()
 
 	if _, ok := c.priceHistory[code]; !ok {
-		return errors.Wrap(ErrProductNotExist, code)
+		return errors.Wrap(error_codes.ErrProductNotExist, code)
 	}
 
 	priceHistory := c.priceHistory[code]
@@ -94,7 +90,7 @@ func (c *cache) FullHistory(code string) (models.PriceHistory, error) {
 	defer c.muH.RUnlock()
 
 	if _, ok := c.priceHistory[code]; !ok {
-		return nil, errors.Wrap(ErrProductNotExist, code)
+		return nil, errors.Wrap(error_codes.ErrProductNotExist, code)
 	}
 
 	return c.priceHistory[code].Copy(), nil
