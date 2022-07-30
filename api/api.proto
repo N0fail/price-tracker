@@ -4,21 +4,40 @@ package ozon.dev.price_tracker.api;
 
 option go_package = "gitlab.ozon.dev/N0fail/price-tracker/pkg/api";
 
+import "api/google/api/annotations.proto";
 
 service Admin {
   rpc ProductCreate(ProductCreateRequest) returns (ProductCreateResponse) {
+    option (google.api.http) = {
+      post: "/v1/product"
+      body: "*"
+    };
   }
 
   rpc ProductList(ProductListRequest) returns (ProductListResponse) {
+    option (google.api.http) = {
+      get: "/v1/product"
+    };
   }
 
   rpc ProductDelete(ProductDeleteRequest) returns (ProductDeleteResponse) {
+    option (google.api.http) = {
+      delete: "/v1/product"
+      body: "*"
+    };
   }
 
   rpc PriceTimeStampAdd(PriceTimeStampAddRequest) returns (PriceTimeStampAddResponse) {
+    option (google.api.http) = {
+      put: "/v1/price"
+      body: "*"
+    };
   }
 
   rpc PriceHistory(PriceHistoryRequest) returns (PriceHistoryResponse) {
+    option (google.api.http) = {
+      get: "/v1/price"
+    };
   }
 }
 

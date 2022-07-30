@@ -2,10 +2,13 @@ package main
 
 import (
 	"context"
+	"github.com/grpc-ecosystem/grpc-gateway/v2/runtime"
 	"google.golang.org/grpc/codes"
+	"google.golang.org/grpc/credentials/insecure"
 	"google.golang.org/grpc/status"
 	"log"
 	"net"
+	"net/http"
 	"time"
 
 	apiPkg "gitlab.ozon.dev/N0fail/price-tracker/internal/api"
@@ -46,5 +49,33 @@ func runGRPCServer(product productPkg.Interface) {
 
 	if err = grpcServer.Serve(listener); err != nil {
 		log.Fatal(err)
+	}
+}
+
+func runREST() {
+	ctx := context.Background()
+
+	ctx, cancel := context.WithCancel(ctx)
+	defer cancel()
+
+	mux := runtime.NewServeMux(
+		runtime.WithIncomingHeaderMatcher(headerMatcherREST),
+	)
+	opts := []grpc.DialOption{grpc.WithTransportCredentials(insecure.NewCredentials())}
+	if err := pb.RegisterAdminHandlerFromEndpoint(ctx, mux, ":8081", opts); err != nil {
+		panic(err)
+	}
+
+	if err := http.ListenAndServe(":8080", mux); err != nil {
+		panic(err)
+	}
+}
+
+func headerMatcherREST(key string) (string, bool) {
+	switch key {
+	case "Custom":
+		return key, true
+	default:
+		return key, false
 	}
 }

@@ -17,6 +17,7 @@ func main() {
 		product = productPkg.New()
 	}
 	go runBot(product)
+	go runREST()
 	runGRPCServer(product)
 }
 
