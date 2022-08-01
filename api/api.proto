@@ -5,8 +5,11 @@ package ozon.dev.price_tracker.api;
 option go_package = "gitlab.ozon.dev/N0fail/price-tracker/pkg/api";
 
 import "api/google/api/annotations.proto";
+// GRPC и REST api для Трэкер цен, который предполагает запись истории цен на какой то товар и просмотр этой истории
 
 service Admin {
+  // Создает продукт с переданным кодом и именем
+  // может вернуть ошибки: ErrNameTooShortError, ErrProductExists
   rpc ProductCreate(ProductCreateRequest) returns (ProductCreateResponse) {
     option (google.api.http) = {
       post: "/v1/product"
@@ -14,12 +17,15 @@ service Admin {
     };
   }
 
+  // Возвращает список всех продуктов (код, имя, последняя цена(если есть))
   rpc ProductList(ProductListRequest) returns (ProductListResponse) {
     option (google.api.http) = {
       get: "/v1/product"
     };
   }
 
+  // Удаляет продукт с переданным кодом
+  // может вернуть ошибки: ErrProductNotExist
   rpc ProductDelete(ProductDeleteRequest) returns (ProductDeleteResponse) {
     option (google.api.http) = {
       delete: "/v1/product"
@@ -27,6 +33,8 @@ service Admin {
     };
   }
 
+  // Добавляет цену для продукта с переданным кодом, дата передается в Unix формате
+  // может вернуть ошибки: ErrProductNotExist, ErrNegativePrice
   rpc PriceTimeStampAdd(PriceTimeStampAddRequest) returns (PriceTimeStampAddResponse) {
     option (google.api.http) = {
       put: "/v1/price"
@@ -34,6 +42,8 @@ service Admin {
     };
   }
 
+  // Возвращает массив всех цен для продукта в хронологичеком порядке (принимает код продукта)
+  // может вернуть ошибки: ErrProductNotExist
   rpc PriceHistory(PriceHistoryRequest) returns (PriceHistoryResponse) {
     option (google.api.http) = {
       get: "/v1/price"
@@ -41,20 +51,25 @@ service Admin {
   }
 }
 
+// Соотвествует модели продукта models.Product
 message Product {
-  string code = 1;
-  string name = 2;
+  string code = 1; // Код продукта
+  string name = 2; // Название, должно быть не короче 4 символов
 }
 
+// Соотвествует модели продукта с ценой models.ProductSnapShot
+// В случае, когда для продукта не было задано ни одной цены priceTimeStamp отсутствует
 message ProductSnapShot {
-  string code = 1;
-  string name = 2;
-  PriceTimeStamp priceTimeStamp = 3;
+  string code = 1; // Код продукта
+  string name = 2; // Название
+  PriceTimeStamp priceTimeStamp = 3; // Последняя цена и дата
 }
 
+// Соотвествует модели models.PriceTimeStamp
+// Дата передается в Unix формате
 message PriceTimeStamp {
-  double price = 1;
-  int64 ts    = 2;
+  double price = 1; // Цена
+  int64 ts    = 2;  // Дата в Unix формате
 }
 
 // ---------------------------------------------------------------------------------------------------------------------
@@ -62,8 +77,8 @@ message PriceTimeStamp {
 // ---------------------------------------------------------------------------------------------------------------------
 
 message ProductCreateRequest {
-  string code     = 1;
-  string name     = 2;
+  string code     = 1; // Код продукта
+  string name     = 2; // Название, должно быть не короче 4 символов
 }
 message ProductCreateResponse {}
 
@@ -81,7 +96,7 @@ message ProductListResponse {
 // ---------------------------------------------------------------------------------------------------------------------
 
 message ProductDeleteRequest {
-  string code = 1;
+  string code = 1; // Код продукта, для удаления
 }
 message ProductDeleteResponse {}
 
@@ -90,9 +105,9 @@ message ProductDeleteResponse {}
 // ---------------------------------------------------------------------------------------------------------------------
 
 message PriceTimeStampAddRequest {
-  string code = 1;
-  int64 ts    = 2;
-  double price = 3;
+  string code = 1; // Код продукта
+  int64 ts    = 2; // Дата в Unix формате
+  double price = 3;// Цена
 }
 message PriceTimeStampAddResponse {}
 
@@ -101,7 +116,7 @@ message PriceTimeStampAddResponse {}
 // ---------------------------------------------------------------------------------------------------------------------
 
 message PriceHistoryRequest {
-  string code = 1;
+  string code = 1; // Код продукта, для которого хотим получить историю цен
 }
 message PriceHistoryResponse {
   repeated PriceTimeStamp priceHistory = 1;

@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"gitlab.ozon.dev/N0fail/price-tracker/internal/config"
 	"log"
 	"time"
 
@@ -12,7 +13,8 @@ import (
 )
 
 func main() {
-	conns, err := grpc.Dial(":8081", grpc.WithTransportCredentials(insecure.NewCredentials()))
+	// у клиента поидее нет доступа к internal константам, но для удобства можно написать
+	conns, err := grpc.Dial(config.GrpcPort, grpc.WithTransportCredentials(insecure.NewCredentials()))
 	if err != nil {
 		log.Fatal(err)
 	}

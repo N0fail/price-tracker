@@ -3,6 +3,7 @@ package main
 import (
 	"context"
 	"github.com/grpc-ecosystem/grpc-gateway/v2/runtime"
+	"gitlab.ozon.dev/N0fail/price-tracker/internal/config"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/credentials/insecure"
 	"google.golang.org/grpc/status"
@@ -34,7 +35,7 @@ func TimeoutIntercept(ctx context.Context, req interface{}, _ *grpc.UnaryServerI
 }
 
 func runGRPCServer(product productPkg.Interface) {
-	listener, err := net.Listen("tcp", ":8081")
+	listener, err := net.Listen("tcp", config.GrpcPort)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -62,7 +63,7 @@ func runREST() {
 		runtime.WithIncomingHeaderMatcher(headerMatcherREST),
 	)
 	opts := []grpc.DialOption{grpc.WithTransportCredentials(insecure.NewCredentials())}
-	if err := pb.RegisterAdminHandlerFromEndpoint(ctx, mux, ":8081", opts); err != nil {
+	if err := pb.RegisterAdminHandlerFromEndpoint(ctx, mux, config.GrpcPort, opts); err != nil {
 		panic(err)
 	}
 
