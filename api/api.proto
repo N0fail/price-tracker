@@ -29,7 +29,6 @@ service Admin {
   rpc ProductDelete(ProductDeleteRequest) returns (ProductDeleteResponse) {
     option (google.api.http) = {
       delete: "/v1/product"
-      body: "*"
     };
   }
 

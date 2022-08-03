@@ -1,0 +1,281 @@
+{
+  "swagger": "2.0",
+  "info": {
+    "title": "api/api.proto",
+    "version": "version not set"
+  },
+  "tags": [
+    {
+      "name": "Admin"
+    }
+  ],
+  "consumes": [
+    "application/json"
+  ],
+  "produces": [
+    "application/json"
+  ],
+  "paths": {
+    "/v1/price": {
+      "get": {
+        "summary": "Возвращает массив всех цен для продукта в хронологичеком порядке (принимает код продукта)\nможет вернуть ошибки: ErrProductNotExist",
+        "operationId": "Admin_PriceHistory",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/apiPriceHistoryResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "code",
+            "in": "query",
+            "required": false,
+            "type": "string"
+          }
+        ],
+        "tags": [
+          "Admin"
+        ]
+      },
+      "put": {
+        "summary": "Добавляет цену для продукта с переданным кодом, дата передается в Unix формате\nможет вернуть ошибки: ErrProductNotExist, ErrNegativePrice",
+        "operationId": "Admin_PriceTimeStampAdd",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/apiPriceTimeStampAddResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/apiPriceTimeStampAddRequest"
+            }
+          }
+        ],
+        "tags": [
+          "Admin"
+        ]
+      }
+    },
+    "/v1/product": {
+      "get": {
+        "summary": "Возвращает список всех продуктов (код, имя, последняя цена(если есть))",
+        "operationId": "Admin_ProductList",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/apiProductListResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "tags": [
+          "Admin"
+        ]
+      },
+      "delete": {
+        "summary": "Удаляет продукт с переданным кодом\nможет вернуть ошибки: ErrProductNotExist",
+        "operationId": "Admin_ProductDelete",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/apiProductDeleteResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "code",
+            "in": "query",
+            "required": false,
+            "type": "string"
+          }
+        ],
+        "tags": [
+          "Admin"
+        ]
+      },
+      "post": {
+        "summary": "Создает продукт с переданным кодом и именем\nможет вернуть ошибки: ErrNameTooShortError, ErrProductExists",
+        "operationId": "Admin_ProductCreate",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/apiProductCreateResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/apiProductCreateRequest"
+            }
+          }
+        ],
+        "tags": [
+          "Admin"
+        ]
+      }
+    }
+  },
+  "definitions": {
+    "apiPriceHistoryResponse": {
+      "type": "object",
+      "properties": {
+        "priceHistory": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/apiPriceTimeStamp"
+          }
+        }
+      }
+    },
+    "apiPriceTimeStamp": {
+      "type": "object",
+      "properties": {
+        "price": {
+          "type": "number",
+          "format": "double"
+        },
+        "ts": {
+          "type": "string",
+          "format": "int64"
+        }
+      },
+      "title": "Соотвествует модели models.PriceTimeStamp\nДата передается в Unix формате"
+    },
+    "apiPriceTimeStampAddRequest": {
+      "type": "object",
+      "properties": {
+        "code": {
+          "type": "string"
+        },
+        "ts": {
+          "type": "string",
+          "format": "int64"
+        },
+        "price": {
+          "type": "number",
+          "format": "double"
+        }
+      }
+    },
+    "apiPriceTimeStampAddResponse": {
+      "type": "object"
+    },
+    "apiProductCreateRequest": {
+      "type": "object",
+      "properties": {
+        "code": {
+          "type": "string"
+        },
+        "name": {
+          "type": "string"
+        }
+      }
+    },
+    "apiProductCreateResponse": {
+      "type": "object"
+    },
+    "apiProductDeleteResponse": {
+      "type": "object"
+    },
+    "apiProductListResponse": {
+      "type": "object",
+      "properties": {
+        "productSnapShots": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/apiProductSnapShot"
+          }
+        }
+      }
+    },
+    "apiProductSnapShot": {
+      "type": "object",
+      "properties": {
+        "code": {
+          "type": "string"
+        },
+        "name": {
+          "type": "string"
+        },
+        "priceTimeStamp": {
+          "$ref": "#/definitions/apiPriceTimeStamp"
+        }
+      },
+      "title": "Соотвествует модели продукта с ценой models.ProductSnapShot\nВ случае, когда для продукта не было задано ни одной цены priceTimeStamp отсутствует"
+    },
+    "protobufAny": {
+      "type": "object",
+      "properties": {
+        "@type": {
+          "type": "string"
+        }
+      },
+      "additionalProperties": {}
+    },
+    "rpcStatus": {
+      "type": "object",
+      "properties": {
+        "code": {
+          "type": "integer",
+          "format": "int32"
+        },
+        "message": {
+          "type": "string"
+        },
+        "details": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/protobufAny"
+          }
+        }
+      }
+    }
+  }
+}

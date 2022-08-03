@@ -59,15 +59,24 @@ func runREST() {
 	ctx, cancel := context.WithCancel(ctx)
 	defer cancel()
 
-	mux := runtime.NewServeMux(
+	gmux := runtime.NewServeMux(
 		runtime.WithIncomingHeaderMatcher(headerMatcherREST),
 	)
+
+	// Serve the swagger-ui and swagger file
+	mux := http.NewServeMux()
+	mux.Handle("/", gmux)
+
+	// Register Swagger Handler
+	fs := http.FileServer(http.Dir("./swagger"))
+	mux.Handle("/swagger/", http.StripPrefix("/swagger/", fs))
+
 	opts := []grpc.DialOption{grpc.WithTransportCredentials(insecure.NewCredentials())}
-	if err := pb.RegisterAdminHandlerFromEndpoint(ctx, mux, config.GrpcPort, opts); err != nil {
+	if err := pb.RegisterAdminHandlerFromEndpoint(ctx, gmux, config.GrpcPort, opts); err != nil {
 		panic(err)
 	}
 
-	if err := http.ListenAndServe(":8080", mux); err != nil {
+	if err := http.ListenAndServe(config.RESTPort, mux); err != nil {
 		panic(err)
 	}
 }
@@ -79,4 +88,8 @@ func headerMatcherREST(key string) (string, bool) {
 	default:
 		return key, false
 	}
+}
+
+func runSwagger() {
+
 }

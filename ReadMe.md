@@ -83,6 +83,10 @@ make gen
 make .deps
 ```
 
+## SWAGGER
+
+Для проекта также запускается сваггер по адресу http://localhost:8080/swagger/
+
 ## Примеры запросов к REST
 
 - Получение списка продуктов с последней ценой
@@ -103,5 +107,5 @@ curl localhost:8080/v1/price?code=1
 ```
 - Удаление продукта
 ```
-curl -X DELETE localhost:8080/v1/product -d '{"code":"1}'
+curl -X DELETE localhost:8080/v1/product?code=1
 ```
