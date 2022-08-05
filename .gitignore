@@ -2,3 +2,4 @@
 apikey.go
 api/google/*
 bin/*
+postgresql/data/*

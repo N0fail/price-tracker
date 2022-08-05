@@ -1,7 +1,12 @@
+.PHONY: run_srver
 run_server:
 	go run cmd/bot/main.go cmd/bot/server.go
+
+.PHONY: run_client
 run_client:
 	go run client/client.go
+
+.PHONY: gen
 gen:
 	protoc --go_out=pkg --go_opt=paths=source_relative --plugin=protoc-gen-go=bin/protoc-gen-go \
 		   --go-grpc_out=pkg --go-grpc_opt=paths=source_relative --plugin=protoc-gen-go-grpc=bin/protoc-gen-go-grpc \
@@ -16,3 +21,12 @@ LOCAL_BIN:=$(CURDIR)/bin
 	GOBIN=$(LOCAL_BIN) go install google.golang.org/protobuf/cmd/protoc-gen-go && \
 	GOBIN=$(LOCAL_BIN) go install google.golang.org/grpc/cmd/protoc-gen-go-grpc && \
 	GOBIN=$(LOCAL_BIN) go install github.com/grpc-ecosystem/grpc-gateway/v2/protoc-gen-openapiv2
+
+.PHONY: up_db
+up_db:
+	docker-compose build
+	docker-compose up -d postgres
+
+.PHONE: down_db
+down_db:
+	docker-compose down

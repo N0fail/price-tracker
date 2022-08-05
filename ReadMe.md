@@ -7,6 +7,21 @@
 - GRPC
 - REST
 
+## Конфигурация БД
+Для запуска Postresql понадобятся 
+```
+docker https://docs.docker.com/engine/install/ 
+docker-compose https://docs.docker.com/compose/install/
+```
+При возникновении проблем с установкой docker-compose на debian-based linux
+```
+https://stackoverflow.com/a/49839172
+```
+БД поднимается с помощью
+```
+make up_db
+```
+
 ## Запуск проекта
 
 1. скачать зависимости
