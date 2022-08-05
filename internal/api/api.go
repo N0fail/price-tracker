@@ -24,22 +24,24 @@ type implementation struct {
 }
 
 func (i *implementation) ProductCreate(ctx context.Context, in *pb.ProductCreateRequest) (*pb.ProductCreateResponse, error) {
-	if err := i.product.Create(models.Product{
+	if err := i.product.ProductCreate(ctx, models.Product{
 		Code: in.GetCode(),
 		Name: in.GetName(),
 	}); err != nil {
-		if errors.Is(err, error_codes.ErrNameTooShortError) {
+		if errors.Is(err, error_codes.ErrProductExists) {
 			return nil, status.Error(codes.InvalidArgument, err.Error())
 		} else if errors.Is(err, error_codes.ErrProductExists) {
 			return nil, status.Error(codes.AlreadyExists, err.Error())
+		} else if errors.Is(err, error_codes.ErrNameTooShortError) {
+			return nil, status.Error(codes.InvalidArgument, err.Error())
 		}
 		return nil, status.Error(codes.Internal, err.Error())
 	}
 
 	return &pb.ProductCreateResponse{}, nil
 }
-func (i *implementation) ProductList(context.Context, *pb.ProductListRequest) (*pb.ProductListResponse, error) {
-	productSnapShots := i.product.List()
+func (i *implementation) ProductList(ctx context.Context, in *pb.ProductListRequest) (*pb.ProductListResponse, error) {
+	productSnapShots := i.product.ProductList(ctx)
 
 	result := make([]*pb.ProductSnapShot, 0, len(productSnapShots))
 	for _, productSnapShot := range productSnapShots {
@@ -63,7 +65,7 @@ func (i *implementation) ProductList(context.Context, *pb.ProductListRequest) (*
 	}, nil
 }
 func (i *implementation) ProductDelete(ctx context.Context, in *pb.ProductDeleteRequest) (*pb.ProductDeleteResponse, error) {
-	if err := i.product.Delete(in.Code); err != nil {
+	if err := i.product.ProductDelete(ctx, in.Code); err != nil {
 		if errors.Is(err, error_codes.ErrProductNotExist) {
 			return nil, status.Error(codes.InvalidArgument, err.Error())
 		}
@@ -77,7 +79,7 @@ func (i *implementation) PriceTimeStampAdd(ctx context.Context, in *pb.PriceTime
 		Price: in.GetPrice(),
 		Date:  time.Unix(in.GetTs(), 0),
 	}
-	if err := i.product.AddPriceTimeStamp(in.Code, ts); err != nil {
+	if err := i.product.AddPriceTimeStamp(ctx, in.Code, ts); err != nil {
 		if errors.Is(err, error_codes.ErrProductNotExist) {
 			return nil, status.Error(codes.InvalidArgument, err.Error())
 		}
@@ -87,7 +89,7 @@ func (i *implementation) PriceTimeStampAdd(ctx context.Context, in *pb.PriceTime
 	return &pb.PriceTimeStampAddResponse{}, nil
 }
 func (i *implementation) PriceHistory(ctx context.Context, in *pb.PriceHistoryRequest) (*pb.PriceHistoryResponse, error) {
-	priceHistory, err := i.product.FullHistory(in.GetCode())
+	priceHistory, err := i.product.FullHistory(ctx, in.GetCode())
 	if err != nil {
 		if errors.Is(err, error_codes.ErrProductNotExist) {
 			return nil, status.Error(codes.InvalidArgument, err.Error())

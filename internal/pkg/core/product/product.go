@@ -1,55 +1,63 @@
 package product
 
 import (
+	"context"
+	"github.com/jackc/pgx/v4/pgxpool"
 	"github.com/pkg/errors"
 	"gitlab.ozon.dev/N0fail/price-tracker/internal/config"
-	cachePkg "gitlab.ozon.dev/N0fail/price-tracker/internal/pkg/core/product/cache"
+	productApiPkg "gitlab.ozon.dev/N0fail/price-tracker/internal/pkg/core/product/api"
 	cacheLocalPkg "gitlab.ozon.dev/N0fail/price-tracker/internal/pkg/core/product/cache/local"
+	postgresPkg "gitlab.ozon.dev/N0fail/price-tracker/internal/pkg/core/product/database/postgres"
 	"gitlab.ozon.dev/N0fail/price-tracker/internal/pkg/core/product/error_codes"
 	"gitlab.ozon.dev/N0fail/price-tracker/internal/pkg/core/product/models"
 )
 
 type Interface interface {
-	Create(product models.Product) error
-	Delete(code string) error
-	List() []models.ProductSnapshot
-	AddPriceTimeStamp(code string, priceTimeStamp models.PriceTimeStamp) error
-	FullHistory(code string) (models.PriceHistory, error)
+	productApiPkg.Interface
 }
 
-func New() Interface {
-	return &core{
-		cache: cacheLocalPkg.New(),
+func New(pool *pgxpool.Pool) Interface {
+	var coreObj core
+	// если передали pool используем БД, иначе кэш
+	if pool == nil {
+		coreObj = core{
+			storage: cacheLocalPkg.New(),
+		}
+	} else {
+		coreObj = core{
+			storage: postgresPkg.New(pool),
+		}
 	}
+	return &coreObj
 }
 
 type core struct {
-	cache cachePkg.Interface
+	storage Interface
 }
 
-func (c *core) Create(product models.Product) error {
+func (c *core) ProductCreate(ctx context.Context, product models.Product) error {
 	if len(product.Name) < config.MinNameLength {
 		return errors.Wrap(error_codes.ErrNameTooShortError, product.Name)
 	}
 
-	return c.cache.ProductCreate(product)
+	return c.storage.ProductCreate(ctx, product)
 }
 
-func (c *core) Delete(code string) error {
-	return c.cache.ProductDelete(code)
+func (c *core) ProductDelete(ctx context.Context, code string) error {
+	return c.storage.ProductDelete(ctx, code)
 }
 
-func (c *core) List() []models.ProductSnapshot {
-	return c.cache.ProductList()
+func (c *core) ProductList(ctx context.Context) []models.ProductSnapshot {
+	return c.storage.ProductList(ctx)
 }
 
-func (c *core) AddPriceTimeStamp(code string, priceTimeStamp models.PriceTimeStamp) error {
+func (c *core) AddPriceTimeStamp(ctx context.Context, code string, priceTimeStamp models.PriceTimeStamp) error {
 	if priceTimeStamp.Price < 0 {
 		return error_codes.ErrNegativePrice
 	}
-	return c.cache.AddPriceTimeStamp(code, priceTimeStamp)
+	return c.storage.AddPriceTimeStamp(ctx, code, priceTimeStamp)
 }
 
-func (c *core) FullHistory(code string) (models.PriceHistory, error) {
-	return c.cache.FullHistory(code)
+func (c *core) FullHistory(ctx context.Context, code string) (models.PriceHistory, error) {
+	return c.storage.FullHistory(ctx, code)
 }

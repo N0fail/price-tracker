@@ -1,6 +1,7 @@
 package local
 
 import (
+	"context"
 	"github.com/pkg/errors"
 	cachePkg "gitlab.ozon.dev/N0fail/price-tracker/internal/pkg/core/product/cache"
 	"gitlab.ozon.dev/N0fail/price-tracker/internal/pkg/core/product/error_codes"
@@ -29,7 +30,7 @@ type cache struct {
 	poolCh       chan struct{}
 }
 
-func (c *cache) ProductList() []models.ProductSnapshot {
+func (c *cache) ProductList(ctx context.Context) []models.ProductSnapshot {
 	c.poolCh <- struct{}{}
 	defer func() {
 		<-c.poolCh
@@ -50,7 +51,7 @@ func (c *cache) ProductList() []models.ProductSnapshot {
 	return res
 }
 
-func (c *cache) ProductCreate(p models.Product) error {
+func (c *cache) ProductCreate(ctx context.Context, p models.Product) error {
 	c.poolCh <- struct{}{}
 	defer func() {
 		<-c.poolCh
@@ -68,7 +69,7 @@ func (c *cache) ProductCreate(p models.Product) error {
 	return nil
 }
 
-func (c *cache) ProductDelete(code string) error {
+func (c *cache) ProductDelete(ctx context.Context, code string) error {
 	c.poolCh <- struct{}{}
 	defer func() {
 		<-c.poolCh
@@ -86,7 +87,7 @@ func (c *cache) ProductDelete(code string) error {
 	return nil
 }
 
-func (c *cache) AddPriceTimeStamp(code string, priceTimeStamp models.PriceTimeStamp) error {
+func (c *cache) AddPriceTimeStamp(ctx context.Context, code string, priceTimeStamp models.PriceTimeStamp) error {
 	c.poolCh <- struct{}{}
 	defer func() {
 		<-c.poolCh
@@ -105,7 +106,7 @@ func (c *cache) AddPriceTimeStamp(code string, priceTimeStamp models.PriceTimeSt
 	return nil
 }
 
-func (c *cache) FullHistory(code string) (models.PriceHistory, error) {
+func (c *cache) FullHistory(ctx context.Context, code string) (models.PriceHistory, error) {
 	c.poolCh <- struct{}{}
 	defer func() {
 		<-c.poolCh

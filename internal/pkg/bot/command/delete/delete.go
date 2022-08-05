@@ -1,9 +1,12 @@
 package delete
 
 import (
+	"context"
 	"fmt"
 	commandPkg "gitlab.ozon.dev/N0fail/price-tracker/internal/pkg/bot/command"
 	productPkg "gitlab.ozon.dev/N0fail/price-tracker/internal/pkg/core/product"
+	"gitlab.ozon.dev/N0fail/price-tracker/internal/pkg/core/product/error_codes"
+	"log"
 )
 
 func New(p productPkg.Interface) commandPkg.Interface {
@@ -17,9 +20,13 @@ type command struct {
 }
 
 func (c *command) Process(cmdArgs string) string {
-	err := c.product.Delete(cmdArgs)
+	ctx, cancel := context.WithCancel(context.Background())
+	defer cancel()
+
+	err := c.product.ProductDelete(ctx, cmdArgs)
 	if err != nil {
-		return err.Error()
+		log.Println(err.Error())
+		return error_codes.GetInternal(err).Error()
 	}
 	return fmt.Sprintf("product %v was successfully removed", cmdArgs)
 }

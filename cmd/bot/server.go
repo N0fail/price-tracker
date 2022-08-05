@@ -89,7 +89,3 @@ func headerMatcherREST(key string) (string, bool) {
 		return key, false
 	}
 }
-
-func runSwagger() {
-
-}

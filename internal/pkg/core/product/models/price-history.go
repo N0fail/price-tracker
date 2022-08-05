@@ -14,7 +14,7 @@ func (p PriceHistory) Copy() PriceHistory {
 
 func (p PriceHistory) GetLast() PriceTimeStamp {
 	if p.Len() == 0 {
-		return emptyPriceTimeStamp
+		return EmptyPriceTimeStamp
 	}
 
 	return p[p.Len()-1]
@@ -22,7 +22,7 @@ func (p PriceHistory) GetLast() PriceTimeStamp {
 
 func (p PriceHistory) String() string {
 	if p.Len() == 0 {
-		return emptyPriceTimeStamp.String()
+		return EmptyPriceTimeStamp.String()
 	}
 	stringData := make([]string, 0, p.Len())
 	for _, priceTimeStamp := range p {

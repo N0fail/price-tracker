@@ -1,6 +1,7 @@
 package list
 
 import (
+	"context"
 	commandPkg "gitlab.ozon.dev/N0fail/price-tracker/internal/pkg/bot/command"
 	productPkg "gitlab.ozon.dev/N0fail/price-tracker/internal/pkg/core/product"
 	"strings"
@@ -17,7 +18,10 @@ type command struct {
 }
 
 func (c *command) Process(cmdArgs string) string {
-	data := c.product.List()
+	ctx, cancel := context.WithCancel(context.Background())
+	defer cancel()
+
+	data := c.product.ProductList(ctx)
 	if len(data) == 0 {
 		return "no products are being tracked now"
 	}
