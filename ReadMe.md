@@ -145,7 +145,7 @@ make .deps
 
 - Получение списка продуктов с последней ценой
 ```
-curl localhost:8080/v1/product
+curl localhost:8080/v1/product?page=2
 ```
 - Добавление продукта
 ```
