@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"flag"
 	"fmt"
 	"github.com/jackc/pgx/v4/pgxpool"
 	"gitlab.ozon.dev/N0fail/price-tracker/internal/config"
@@ -20,26 +21,32 @@ func main() {
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
 
-	// connection string
-	psqlConn := fmt.Sprintf("host=%s port=%d user=%s password=%s dbname=%s sslmode=disable", config.DbHost, config.DbPort, config.DbUser, config.DbPassword, config.DbName)
+	useCache := flag.Bool("cache", false, "run using cache")
 
-	// connect to database
-	pool, err := pgxpool.Connect(ctx, psqlConn)
-	if err != nil {
-		log.Fatal("can't connect to database", err)
+	var pool *pgxpool.Pool
+	if !*useCache {
+		// connection string
+		psqlConn := fmt.Sprintf("host=%s port=%d user=%s password=%s dbname=%s sslmode=disable", config.DbHost, config.DbPort, config.DbUser, config.DbPassword, config.DbName)
+
+		// connect to database
+		var err error
+		pool, err = pgxpool.Connect(ctx, psqlConn)
+		if err != nil {
+			log.Fatal("can't connect to database", err)
+		}
+		defer pool.Close()
+
+		if err := pool.Ping(ctx); err != nil {
+			log.Fatal("ping database error", err)
+		}
+
+		// настраиваем
+		poolConfig := pool.Config()
+		poolConfig.MaxConnIdleTime = config.DbMaxConnIdleTime
+		poolConfig.MaxConnLifetime = config.DbMaxConnLifetime
+		poolConfig.MinConns = config.DbMinConns
+		poolConfig.MaxConns = config.DbMaxConns
 	}
-	defer pool.Close()
-
-	if err := pool.Ping(ctx); err != nil {
-		log.Fatal("ping database error", err)
-	}
-
-	// настраиваем
-	poolConfig := pool.Config()
-	poolConfig.MaxConnIdleTime = config.DbMaxConnIdleTime
-	poolConfig.MaxConnLifetime = config.DbMaxConnLifetime
-	poolConfig.MinConns = config.DbMinConns
-	poolConfig.MaxConns = config.DbMaxConns
 
 	var product productPkg.Interface
 	{

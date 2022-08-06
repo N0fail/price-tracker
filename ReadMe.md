@@ -67,9 +67,14 @@ make generation NAME=generation_name
     ```
    1. Ключ можно получить у https://t.me/botfather прислав ему сообщение /newbot
 3. запустить 
-    ```
-    make run_server
-    ```
+   1. Используя БД постгрес
+      ```
+      make run_server
+      ```
+   2. Используя кэш (данные пропадают после завершения работы сервера)
+      ```
+      make run_server_cache
+      ```
 
 ## Доступные комманды телеграм бота
 

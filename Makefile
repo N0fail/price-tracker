@@ -1,6 +1,10 @@
-.PHONY: run_srver
+.PHONY: run_server
 run_server:
 	go run cmd/bot/main.go cmd/bot/server.go
+
+.PHONY: run_server_cache
+run_server_cache:
+	go run cmd/bot/main.go cmd/bot/server.go -cache
 
 .PHONY: run_client
 run_client:
