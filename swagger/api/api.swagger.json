@@ -18,7 +18,7 @@
   "paths": {
     "/v1/price": {
       "get": {
-        "summary": "Возвращает массив всех цен для продукта в хронологичеком порядке (принимает код продукта)\nможет вернуть ошибки: ErrProductNotExist",
+        "summary": "Возвращает массив всех цен для продукта в хронологичеком порядке (принимает код продукта)\nможет вернуть ошибки: ErrProductNotExist, ErrExternalProblem",
         "operationId": "Admin_PriceHistory",
         "responses": {
           "200": {
@@ -47,7 +47,7 @@
         ]
       },
       "put": {
-        "summary": "Добавляет цену для продукта с переданным кодом, дата передается в Unix формате\nможет вернуть ошибки: ErrProductNotExist, ErrNegativePrice",
+        "summary": "Добавляет цену для продукта с переданным кодом, дата передается в Unix формате\nможет вернуть ошибки: ErrProductNotExist, ErrNegativePrice, ErrExternalProblem",
         "operationId": "Admin_PriceTimeStampAdd",
         "responses": {
           "200": {
@@ -80,7 +80,7 @@
     },
     "/v1/product": {
       "get": {
-        "summary": "Возвращает список продуктов на переданной странице, нумерация с 0, 20 продуктов на страницу\nФормат возвращаемых данных: (код, имя, последняя цена(если есть))",
+        "summary": "Возвращает список продуктов на переданной странице, при переданном числе результатов на страницу и сортировке по выбранному полю\nФормат возвращаемых данных: (код, имя, последняя цена(если есть))\nможет вернуть ошибки: ErrNoEntries, ErrExternalProblem",
         "operationId": "Admin_ProductList",
         "responses": {
           "200": {
@@ -98,11 +98,29 @@
         },
         "parameters": [
           {
-            "name": "page",
+            "name": "pageNumber",
             "in": "query",
             "required": false,
             "type": "integer",
             "format": "int64"
+          },
+          {
+            "name": "resultsPerPage",
+            "in": "query",
+            "required": false,
+            "type": "integer",
+            "format": "int64"
+          },
+          {
+            "name": "orderBy",
+            "in": "query",
+            "required": false,
+            "type": "string",
+            "enum": [
+              "code",
+              "name"
+            ],
+            "default": "code"
           }
         ],
         "tags": [
@@ -110,7 +128,7 @@
         ]
       },
       "delete": {
-        "summary": "Удаляет продукт с переданным кодом\nможет вернуть ошибки: ErrProductNotExist",
+        "summary": "Удаляет продукт с переданным кодом\nможет вернуть ошибки: ErrProductNotExist, ErrExternalProblem",
         "operationId": "Admin_ProductDelete",
         "responses": {
           "200": {
@@ -139,7 +157,7 @@
         ]
       },
       "post": {
-        "summary": "Создает продукт с переданным кодом и именем\nможет вернуть ошибки: ErrNameTooShortError, ErrProductExists",
+        "summary": "Создает продукт с переданным кодом и именем\nможет вернуть ошибки: ErrNameTooShortError, ErrProductExists, ErrExternalProblem",
         "operationId": "Admin_ProductCreate",
         "responses": {
           "200": {
@@ -172,6 +190,14 @@
     }
   },
   "definitions": {
+    "ProductListRequestOrder_by": {
+      "type": "string",
+      "enum": [
+        "code",
+        "name"
+      ],
+      "default": "code"
+    },
     "apiPriceHistoryResponse": {
       "type": "object",
       "properties": {

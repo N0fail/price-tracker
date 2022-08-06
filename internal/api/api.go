@@ -3,6 +3,7 @@ package api
 import (
 	"context"
 	"github.com/pkg/errors"
+	"gitlab.ozon.dev/N0fail/price-tracker/internal/config"
 	productPkg "gitlab.ozon.dev/N0fail/price-tracker/internal/pkg/core/product"
 	"gitlab.ozon.dev/N0fail/price-tracker/internal/pkg/core/product/error_codes"
 	"gitlab.ozon.dev/N0fail/price-tracker/internal/pkg/core/product/models"
@@ -41,7 +42,22 @@ func (i *implementation) ProductCreate(ctx context.Context, in *pb.ProductCreate
 	return &pb.ProductCreateResponse{}, nil
 }
 func (i *implementation) ProductList(ctx context.Context, in *pb.ProductListRequest) (*pb.ProductListResponse, error) {
-	productSnapShots := i.product.ProductList(ctx, in.Page)
+	var order_by string
+	if in.GetOrderBy() == pb.ProductListRequest_code {
+		order_by = "code"
+	} else if in.GetOrderBy() == pb.ProductListRequest_name {
+		order_by = "name"
+	} else {
+		return &pb.ProductListResponse{}, errors.New("Not implemented order_by")
+	}
+	resultsPerPage := in.ResultsPerPage
+	if resultsPerPage == 0 {
+		resultsPerPage = config.DefaultResultsPerPage
+	}
+	productSnapShots, err := i.product.ProductList(ctx, in.PageNumber, resultsPerPage, order_by)
+	if err != nil {
+		return &pb.ProductListResponse{}, error_codes.GetInternal(err)
+	}
 
 	result := make([]*pb.ProductSnapShot, 0, len(productSnapShots))
 	for _, productSnapShot := range productSnapShots {

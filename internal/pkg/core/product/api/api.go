@@ -6,7 +6,7 @@ import (
 )
 
 type Interface interface {
-	ProductList(ctx context.Context, page uint32) []models.ProductSnapshot
+	ProductList(ctx context.Context, pageNumber, resultsPerPage uint32, orderBy string) ([]models.ProductSnapshot, error)
 	ProductCreate(ctx context.Context, product models.Product) error
 	ProductDelete(ctx context.Context, code string) error
 	AddPriceTimeStamp(ctx context.Context, code string, priceTimeStamp models.PriceTimeStamp) error

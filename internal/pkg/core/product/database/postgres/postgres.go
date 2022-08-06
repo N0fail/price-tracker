@@ -6,7 +6,6 @@ import (
 	"github.com/georgysavva/scany/pgxscan"
 	"github.com/jackc/pgx/v4/pgxpool"
 	"github.com/pkg/errors"
-	"gitlab.ozon.dev/N0fail/price-tracker/internal/config"
 	databasePkg "gitlab.ozon.dev/N0fail/price-tracker/internal/pkg/core/product/database"
 	"gitlab.ozon.dev/N0fail/price-tracker/internal/pkg/core/product/error_codes"
 	"gitlab.ozon.dev/N0fail/price-tracker/internal/pkg/core/product/models"
@@ -23,12 +22,12 @@ type postgres struct {
 	pool *pgxpool.Pool
 }
 
-func (p *postgres) ProductList(ctx context.Context, page uint32) []models.ProductSnapshot {
+func (p *postgres) ProductList(ctx context.Context, pageNumber, resultsPerPage uint32, orderBy string) ([]models.ProductSnapshot, error) {
 	const query = `
 	SELECT products.code, products.name, last_price.price, last_price.date
 	FROM (SELECT *
 		FROM products
-		ORDER BY code
+		ORDER BY $3
 		LIMIT $1
 		OFFSET $2) as products
 	LEFT JOIN
@@ -40,12 +39,16 @@ func (p *postgres) ProductList(ctx context.Context, page uint32) []models.Produc
 	WHERE rank < 2) last_price on products.code = last_price.code
 	`
 
-	rows, err := p.pool.Query(ctx, query, config.PageSize, page*config.PageSize)
+	rows, err := p.pool.Query(ctx, query, resultsPerPage, pageNumber*resultsPerPage, orderBy)
 	if err != nil {
 		log.Printf("postgres.ProductList: query: %v", err)
-		return nil
+		return nil, err
 	}
 	defer rows.Close()
+
+	if !rows.Next() {
+		return nil, error_codes.ErrNoEntries
+	}
 
 	result := make([]models.ProductSnapshot, 0)
 	for rows.Next() {
@@ -61,12 +64,12 @@ func (p *postgres) ProductList(ctx context.Context, page uint32) []models.Produc
 
 		if err != nil {
 			log.Printf("postgres.ProductList: scan: %v", err)
-			return nil
+			return nil, err
 		}
 		result = append(result, newSnapShot)
 	}
 
-	return result
+	return result, nil
 }
 
 func (p *postgres) ProductGet(ctx context.Context, code string) (models.Product, error) {

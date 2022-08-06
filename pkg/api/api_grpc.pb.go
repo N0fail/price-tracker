@@ -23,19 +23,20 @@ const _ = grpc.SupportPackageIsVersion7
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
 type AdminClient interface {
 	// Создает продукт с переданным кодом и именем
-	// может вернуть ошибки: ErrNameTooShortError, ErrProductExists
+	// может вернуть ошибки: ErrNameTooShortError, ErrProductExists, ErrExternalProblem
 	ProductCreate(ctx context.Context, in *ProductCreateRequest, opts ...grpc.CallOption) (*ProductCreateResponse, error)
-	// Возвращает список продуктов на переданной странице, нумерация с 0, 20 продуктов на страницу
+	// Возвращает список продуктов на переданной странице, при переданном числе результатов на страницу и сортировке по выбранному полю
 	// Формат возвращаемых данных: (код, имя, последняя цена(если есть))
+	// может вернуть ошибки: ErrNoEntries, ErrExternalProblem
 	ProductList(ctx context.Context, in *ProductListRequest, opts ...grpc.CallOption) (*ProductListResponse, error)
 	// Удаляет продукт с переданным кодом
-	// может вернуть ошибки: ErrProductNotExist
+	// может вернуть ошибки: ErrProductNotExist, ErrExternalProblem
 	ProductDelete(ctx context.Context, in *ProductDeleteRequest, opts ...grpc.CallOption) (*ProductDeleteResponse, error)
 	// Добавляет цену для продукта с переданным кодом, дата передается в Unix формате
-	// может вернуть ошибки: ErrProductNotExist, ErrNegativePrice
+	// может вернуть ошибки: ErrProductNotExist, ErrNegativePrice, ErrExternalProblem
 	PriceTimeStampAdd(ctx context.Context, in *PriceTimeStampAddRequest, opts ...grpc.CallOption) (*PriceTimeStampAddResponse, error)
 	// Возвращает массив всех цен для продукта в хронологичеком порядке (принимает код продукта)
-	// может вернуть ошибки: ErrProductNotExist
+	// может вернуть ошибки: ErrProductNotExist, ErrExternalProblem
 	PriceHistory(ctx context.Context, in *PriceHistoryRequest, opts ...grpc.CallOption) (*PriceHistoryResponse, error)
 }
 
@@ -97,19 +98,20 @@ func (c *adminClient) PriceHistory(ctx context.Context, in *PriceHistoryRequest,
 // for forward compatibility
 type AdminServer interface {
 	// Создает продукт с переданным кодом и именем
-	// может вернуть ошибки: ErrNameTooShortError, ErrProductExists
+	// может вернуть ошибки: ErrNameTooShortError, ErrProductExists, ErrExternalProblem
 	ProductCreate(context.Context, *ProductCreateRequest) (*ProductCreateResponse, error)
-	// Возвращает список продуктов на переданной странице, нумерация с 0, 20 продуктов на страницу
+	// Возвращает список продуктов на переданной странице, при переданном числе результатов на страницу и сортировке по выбранному полю
 	// Формат возвращаемых данных: (код, имя, последняя цена(если есть))
+	// может вернуть ошибки: ErrNoEntries, ErrExternalProblem
 	ProductList(context.Context, *ProductListRequest) (*ProductListResponse, error)
 	// Удаляет продукт с переданным кодом
-	// может вернуть ошибки: ErrProductNotExist
+	// может вернуть ошибки: ErrProductNotExist, ErrExternalProblem
 	ProductDelete(context.Context, *ProductDeleteRequest) (*ProductDeleteResponse, error)
 	// Добавляет цену для продукта с переданным кодом, дата передается в Unix формате
-	// может вернуть ошибки: ErrProductNotExist, ErrNegativePrice
+	// может вернуть ошибки: ErrProductNotExist, ErrNegativePrice, ErrExternalProblem
 	PriceTimeStampAdd(context.Context, *PriceTimeStampAddRequest) (*PriceTimeStampAddResponse, error)
 	// Возвращает массив всех цен для продукта в хронологичеком порядке (принимает код продукта)
-	// может вернуть ошибки: ErrProductNotExist
+	// может вернуть ошибки: ErrProductNotExist, ErrExternalProblem
 	PriceHistory(context.Context, *PriceHistoryRequest) (*PriceHistoryResponse, error)
 	mustEmbedUnimplementedAdminServer()
 }

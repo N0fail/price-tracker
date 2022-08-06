@@ -3,7 +3,6 @@ package local
 import (
 	"context"
 	"github.com/pkg/errors"
-	"gitlab.ozon.dev/N0fail/price-tracker/internal/config"
 	cachePkg "gitlab.ozon.dev/N0fail/price-tracker/internal/pkg/core/product/cache"
 	"gitlab.ozon.dev/N0fail/price-tracker/internal/pkg/core/product/error_codes"
 	"gitlab.ozon.dev/N0fail/price-tracker/internal/pkg/core/product/models"
@@ -31,7 +30,7 @@ type cache struct {
 	poolCh       chan struct{}
 }
 
-func (c *cache) ProductList(ctx context.Context, page uint32) []models.ProductSnapshot {
+func (c *cache) ProductList(ctx context.Context, pageNumber, resultsPerPage uint32, orderBy string) ([]models.ProductSnapshot, error) {
 	c.poolCh <- struct{}{}
 	defer func() {
 		<-c.poolCh
@@ -41,25 +40,30 @@ func (c *cache) ProductList(ctx context.Context, page uint32) []models.ProductSn
 	c.muH.RLock()
 	defer c.muH.RUnlock()
 
-	from := page * config.PageSize
-	to := (page + 1) * config.PageSize
+	from := pageNumber * resultsPerPage
+	to := (pageNumber + 1) * resultsPerPage
 	if from >= uint32(len(c.product)) {
-		return make([]models.ProductSnapshot, 0, 0)
+		return nil, error_codes.ErrNoEntries
 	}
-	codes := make([]string, 0, len(c.product))
+	allProducts := make([]models.Product, 0, len(c.product))
 
 	for _, product := range c.product {
-		codes = append(codes, product.Code)
-
+		allProducts = append(allProducts, product)
 	}
-	sort.Strings(codes)
+	sort.SliceStable(allProducts, func(i, j int) bool {
+		if orderBy == "name" {
+			return allProducts[i].Name < allProducts[j].Name
+		} else {
+			return allProducts[i].Code < allProducts[j].Code
+		}
+	})
 
-	res := make([]models.ProductSnapshot, 0, config.PageSize)
+	res := make([]models.ProductSnapshot, 0, resultsPerPage)
 	for i := from; i < to; i++ {
-		if i >= uint32(len(codes)) {
+		if i >= uint32(len(allProducts)) {
 			break
 		}
-		product := c.product[codes[i]]
+		product := allProducts[i]
 		res = append(res, models.ProductSnapshot{
 			Name:      product.Name,
 			Code:      product.Code,
@@ -67,7 +71,7 @@ func (c *cache) ProductList(ctx context.Context, page uint32) []models.ProductSn
 		})
 	}
 
-	return res
+	return res, nil
 }
 
 func (c *cache) ProductCreate(ctx context.Context, p models.Product) error {

@@ -7,6 +7,7 @@ import (
 	"gitlab.ozon.dev/N0fail/price-tracker/internal/config"
 	commandPkg "gitlab.ozon.dev/N0fail/price-tracker/internal/pkg/bot/command"
 	productPkg "gitlab.ozon.dev/N0fail/price-tracker/internal/pkg/core/product"
+	"gitlab.ozon.dev/N0fail/price-tracker/internal/pkg/core/product/error_codes"
 	"log"
 	"strconv"
 )
@@ -35,9 +36,9 @@ func (c *command) Process(cmdArgs string) string {
 	}
 	page = page - 1
 
-	data := c.product.ProductList(ctx, uint32(page))
-	if len(data) == 0 {
-		return "There are no products on the given page"
+	data, err := c.product.ProductList(ctx, uint32(page), config.DefaultResultsPerPage, config.DefaultOrderBy)
+	if err != nil {
+		return error_codes.GetInternal(err).Error()
 	}
 	var buffer bytes.Buffer
 	for _, p := range data {
@@ -52,5 +53,5 @@ func (c *command) Name() string {
 }
 
 func (c *command) Help() string {
-	return fmt.Sprintf("get list of products on given page, there are %v products on one page, args:<page>", config.PageSize)
+	return fmt.Sprintf("get list of products on given page, there are %v products on one page, args:<page>", config.DefaultResultsPerPage)
 }

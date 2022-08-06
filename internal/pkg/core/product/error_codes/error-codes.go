@@ -9,6 +9,7 @@ var (
 	ErrProductNotExist   = errors.New("product does not exist")
 	ErrProductExists     = errors.New("product exists")
 	ErrEmptyCode         = errors.New("product code can't be empty")
+	ErrNoEntries         = errors.New("no entries in given bounds")
 )
 
 func GetInternal(err error) error {
@@ -26,6 +27,9 @@ func GetInternal(err error) error {
 	}
 	if errors.Is(err, ErrEmptyCode) {
 		return ErrEmptyCode
+	}
+	if errors.Is(err, ErrNoEntries) {
+		return ErrNoEntries
 	}
 	return ErrExternalProblem
 }

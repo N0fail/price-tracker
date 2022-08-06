@@ -9,7 +9,9 @@ const (
 	GetUpdatesTimeout = 60                 // таймаут на запрос получения обновлений чата
 	GrpcPort          = ":8081"            // порт, на котором работает grpc сервер
 	RESTPort          = ":8080"            // порт, на котором работает REST и сваггер
-	PageSize          = 20                 // кол-во элементов на одной странице при вызове List
+
+	DefaultResultsPerPage = 20     // кол-во результатов на на страницу по умолчанию (ф-я List)
+	DefaultOrderBy        = "code" //поле сортировки по умолчанию (ф-я List)
 
 	DbHost     = "localhost"
 	DbPort     = 5432

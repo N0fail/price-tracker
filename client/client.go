@@ -57,7 +57,9 @@ func main() {
 func list(client pb.AdminClient, ctx context.Context, expected string) {
 	funcName := "list"
 	resp, err := client.ProductList(ctx, &pb.ProductListRequest{
-		Page: 0,
+		PageNumber:     0,
+		ResultsPerPage: 10,
+		OrderBy:        pb.ProductListRequest_code,
 	})
 	if err != nil {
 		log.Printf("func: [%v]:\nerror: [%v]\nexpected: [%v]", funcName, err, expected)

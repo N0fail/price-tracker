@@ -51,8 +51,8 @@ func (c *core) ProductDelete(ctx context.Context, code string) error {
 	return c.storage.ProductDelete(ctx, code)
 }
 
-func (c *core) ProductList(ctx context.Context, page uint32) []models.ProductSnapshot {
-	return c.storage.ProductList(ctx, page)
+func (c *core) ProductList(ctx context.Context, pageNumber, resultsPerPage uint32, orderBy string) ([]models.ProductSnapshot, error) {
+	return c.storage.ProductList(ctx, pageNumber, resultsPerPage, orderBy)
 }
 
 func (c *core) AddPriceTimeStamp(ctx context.Context, code string, priceTimeStamp models.PriceTimeStamp) error {

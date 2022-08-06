@@ -9,7 +9,7 @@ import "api/google/api/annotations.proto";
 
 service Admin {
   // Создает продукт с переданным кодом и именем
-  // может вернуть ошибки: ErrNameTooShortError, ErrProductExists
+  // может вернуть ошибки: ErrNameTooShortError, ErrProductExists, ErrExternalProblem
   rpc ProductCreate(ProductCreateRequest) returns (ProductCreateResponse) {
     option (google.api.http) = {
       post: "/v1/product"
@@ -17,8 +17,9 @@ service Admin {
     };
   }
 
-  // Возвращает список продуктов на переданной странице, нумерация с 0, 20 продуктов на страницу
+  // Возвращает список продуктов на переданной странице, при переданном числе результатов на страницу и сортировке по выбранному полю
   // Формат возвращаемых данных: (код, имя, последняя цена(если есть))
+  // может вернуть ошибки: ErrNoEntries, ErrExternalProblem
   rpc ProductList(ProductListRequest) returns (ProductListResponse) {
     option (google.api.http) = {
       get: "/v1/product"
@@ -26,7 +27,7 @@ service Admin {
   }
 
   // Удаляет продукт с переданным кодом
-  // может вернуть ошибки: ErrProductNotExist
+  // может вернуть ошибки: ErrProductNotExist, ErrExternalProblem
   rpc ProductDelete(ProductDeleteRequest) returns (ProductDeleteResponse) {
     option (google.api.http) = {
       delete: "/v1/product"
@@ -34,7 +35,7 @@ service Admin {
   }
 
   // Добавляет цену для продукта с переданным кодом, дата передается в Unix формате
-  // может вернуть ошибки: ErrProductNotExist, ErrNegativePrice
+  // может вернуть ошибки: ErrProductNotExist, ErrNegativePrice, ErrExternalProblem
   rpc PriceTimeStampAdd(PriceTimeStampAddRequest) returns (PriceTimeStampAddResponse) {
     option (google.api.http) = {
       put: "/v1/price"
@@ -43,7 +44,7 @@ service Admin {
   }
 
   // Возвращает массив всех цен для продукта в хронологичеком порядке (принимает код продукта)
-  // может вернуть ошибки: ErrProductNotExist
+  // может вернуть ошибки: ErrProductNotExist, ErrExternalProblem
   rpc PriceHistory(PriceHistoryRequest) returns (PriceHistoryResponse) {
     option (google.api.http) = {
       get: "/v1/price"
@@ -87,7 +88,13 @@ message ProductCreateResponse {}
 // ---------------------------------------------------------------------------------------------------------------------
 
 message ProductListRequest {
-  uint32 page = 1; // Номер страницы
+  uint32 page_number = 1; // Номер страницы
+  uint32 results_per_page = 2; // Кол-во элементов на странице
+  enum Order_by {
+    code = 0;
+    name = 1;
+  }
+  Order_by order_by =3; // Поле, по которому выполняется сортировка
 }
 message ProductListResponse {
   repeated ProductSnapShot productSnapShots = 1;
