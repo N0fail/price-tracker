@@ -28,10 +28,6 @@ func (c *command) Process(cmdArgs string) string {
 		return "incorrect number of arguments\n" + c.Help()
 	}
 
-	if params[0] == "" {
-		return "empty product code"
-	}
-
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
 

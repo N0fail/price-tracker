@@ -6,7 +6,7 @@ CREATE TABLE IF NOT EXISTS public.price_history (
             FOREIGN KEY(code)
                 REFERENCES products(code),
        price float8 NOT NULL,
-       date DATE NOT NULL
+       date TIMESTAMP NOT NULL
 );
 -- +goose StatementEnd
 

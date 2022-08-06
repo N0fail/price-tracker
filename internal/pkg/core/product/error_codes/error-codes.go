@@ -8,6 +8,7 @@ var (
 	ErrNegativePrice     = errors.New("price should be positive")
 	ErrProductNotExist   = errors.New("product does not exist")
 	ErrProductExists     = errors.New("product exists")
+	ErrEmptyCode         = errors.New("product code can't be empty")
 )
 
 func GetInternal(err error) error {
@@ -22,6 +23,9 @@ func GetInternal(err error) error {
 	}
 	if errors.Is(err, ErrNameTooShortError) {
 		return ErrNameTooShortError
+	}
+	if errors.Is(err, ErrEmptyCode) {
+		return ErrEmptyCode
 	}
 	return ErrExternalProblem
 }

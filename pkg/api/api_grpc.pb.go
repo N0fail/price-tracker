@@ -25,7 +25,8 @@ type AdminClient interface {
 	// Создает продукт с переданным кодом и именем
 	// может вернуть ошибки: ErrNameTooShortError, ErrProductExists
 	ProductCreate(ctx context.Context, in *ProductCreateRequest, opts ...grpc.CallOption) (*ProductCreateResponse, error)
-	// Возвращает список всех продуктов (код, имя, последняя цена(если есть))
+	// Возвращает список продуктов на переданной странице, нумерация с 0, 20 продуктов на страницу
+	// Формат возвращаемых данных: (код, имя, последняя цена(если есть))
 	ProductList(ctx context.Context, in *ProductListRequest, opts ...grpc.CallOption) (*ProductListResponse, error)
 	// Удаляет продукт с переданным кодом
 	// может вернуть ошибки: ErrProductNotExist
@@ -98,7 +99,8 @@ type AdminServer interface {
 	// Создает продукт с переданным кодом и именем
 	// может вернуть ошибки: ErrNameTooShortError, ErrProductExists
 	ProductCreate(context.Context, *ProductCreateRequest) (*ProductCreateResponse, error)
-	// Возвращает список всех продуктов (код, имя, последняя цена(если есть))
+	// Возвращает список продуктов на переданной странице, нумерация с 0, 20 продуктов на страницу
+	// Формат возвращаемых данных: (код, имя, последняя цена(если есть))
 	ProductList(context.Context, *ProductListRequest) (*ProductListResponse, error)
 	// Удаляет продукт с переданным кодом
 	// может вернуть ошибки: ErrProductNotExist

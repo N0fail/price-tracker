@@ -6,6 +6,7 @@ import (
 	"github.com/georgysavva/scany/pgxscan"
 	"github.com/jackc/pgx/v4/pgxpool"
 	"github.com/pkg/errors"
+	"gitlab.ozon.dev/N0fail/price-tracker/internal/config"
 	databasePkg "gitlab.ozon.dev/N0fail/price-tracker/internal/pkg/core/product/database"
 	"gitlab.ozon.dev/N0fail/price-tracker/internal/pkg/core/product/error_codes"
 	"gitlab.ozon.dev/N0fail/price-tracker/internal/pkg/core/product/models"
@@ -22,10 +23,14 @@ type postgres struct {
 	pool *pgxpool.Pool
 }
 
-func (p *postgres) ProductList(ctx context.Context) []models.ProductSnapshot {
+func (p *postgres) ProductList(ctx context.Context, page uint32) []models.ProductSnapshot {
 	const query = `
 	SELECT products.code, products.name, last_price.price, last_price.date
-	FROM products
+	FROM (SELECT *
+		FROM products
+		ORDER BY code
+		LIMIT $1
+		OFFSET $2) as products
 	LEFT JOIN
 	(SELECT code, price, date FROM (SELECT code,
 		price,
@@ -35,7 +40,7 @@ func (p *postgres) ProductList(ctx context.Context) []models.ProductSnapshot {
 	WHERE rank < 2) last_price on products.code = last_price.code
 	`
 
-	rows, err := p.pool.Query(ctx, query)
+	rows, err := p.pool.Query(ctx, query, config.PageSize, page*config.PageSize)
 	if err != nil {
 		log.Printf("postgres.ProductList: query: %v", err)
 		return nil

@@ -36,6 +36,10 @@ type core struct {
 }
 
 func (c *core) ProductCreate(ctx context.Context, product models.Product) error {
+	if product.Code == "" {
+		return error_codes.ErrEmptyCode
+	}
+
 	if len(product.Name) < config.MinNameLength {
 		return errors.Wrap(error_codes.ErrNameTooShortError, product.Name)
 	}
@@ -47,8 +51,8 @@ func (c *core) ProductDelete(ctx context.Context, code string) error {
 	return c.storage.ProductDelete(ctx, code)
 }
 
-func (c *core) ProductList(ctx context.Context) []models.ProductSnapshot {
-	return c.storage.ProductList(ctx)
+func (c *core) ProductList(ctx context.Context, page uint32) []models.ProductSnapshot {
+	return c.storage.ProductList(ctx, page)
 }
 
 func (c *core) AddPriceTimeStamp(ctx context.Context, code string, priceTimeStamp models.PriceTimeStamp) error {

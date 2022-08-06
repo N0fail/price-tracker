@@ -1,10 +1,14 @@
 package list
 
 import (
+	"bytes"
 	"context"
+	"fmt"
+	"gitlab.ozon.dev/N0fail/price-tracker/internal/config"
 	commandPkg "gitlab.ozon.dev/N0fail/price-tracker/internal/pkg/bot/command"
 	productPkg "gitlab.ozon.dev/N0fail/price-tracker/internal/pkg/core/product"
-	"strings"
+	"log"
+	"strconv"
 )
 
 func New(p productPkg.Interface) commandPkg.Interface {
@@ -21,15 +25,26 @@ func (c *command) Process(cmdArgs string) string {
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
 
-	data := c.product.ProductList(ctx)
+	page, err := strconv.ParseUint(cmdArgs, 10, 32)
+	if err != nil {
+		log.Print(err.Error())
+		return "Error in page format, correct example: 2"
+	}
+	if page == 0 {
+		return "Page number must be positive"
+	}
+	page = page - 1
+
+	data := c.product.ProductList(ctx, uint32(page))
 	if len(data) == 0 {
-		return "no products are being tracked now"
+		return "There are no products on the given page"
 	}
-	res := make([]string, 0, len(data))
+	var buffer bytes.Buffer
 	for _, p := range data {
-		res = append(res, p.String())
+		buffer.WriteString(p.String())
+		buffer.WriteString("\n")
 	}
-	return strings.Join(res, "\n")
+	return buffer.String()
 }
 
 func (c *command) Name() string {
@@ -37,5 +52,5 @@ func (c *command) Name() string {
 }
 
 func (c *command) Help() string {
-	return "get list of all products"
+	return fmt.Sprintf("get list of products on given page, there are %v products on one page, args:<page>", config.PageSize)
 }

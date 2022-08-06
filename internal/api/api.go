@@ -41,7 +41,7 @@ func (i *implementation) ProductCreate(ctx context.Context, in *pb.ProductCreate
 	return &pb.ProductCreateResponse{}, nil
 }
 func (i *implementation) ProductList(ctx context.Context, in *pb.ProductListRequest) (*pb.ProductListResponse, error) {
-	productSnapShots := i.product.ProductList(ctx)
+	productSnapShots := i.product.ProductList(ctx, in.Page)
 
 	result := make([]*pb.ProductSnapShot, 0, len(productSnapShots))
 	for _, productSnapShot := range productSnapShots {

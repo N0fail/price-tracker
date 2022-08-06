@@ -37,3 +37,8 @@ MIGRATIONS_DIR=./migrations
 .PHONY: migration
 migration:
 	goose -dir=${MIGRATIONS_DIR} create $(NAME) sql
+
+GENERATIONS_DIR=./migrations/generations
+.PHONY: generation
+generation:
+	goose -dir=${GENERATIONS_DIR} create $(NAME) sql

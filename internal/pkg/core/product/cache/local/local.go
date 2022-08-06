@@ -3,6 +3,7 @@ package local
 import (
 	"context"
 	"github.com/pkg/errors"
+	"gitlab.ozon.dev/N0fail/price-tracker/internal/config"
 	cachePkg "gitlab.ozon.dev/N0fail/price-tracker/internal/pkg/core/product/cache"
 	"gitlab.ozon.dev/N0fail/price-tracker/internal/pkg/core/product/error_codes"
 	"gitlab.ozon.dev/N0fail/price-tracker/internal/pkg/core/product/models"
@@ -30,7 +31,7 @@ type cache struct {
 	poolCh       chan struct{}
 }
 
-func (c *cache) ProductList(ctx context.Context) []models.ProductSnapshot {
+func (c *cache) ProductList(ctx context.Context, page uint32) []models.ProductSnapshot {
 	c.poolCh <- struct{}{}
 	defer func() {
 		<-c.poolCh
@@ -40,14 +41,32 @@ func (c *cache) ProductList(ctx context.Context) []models.ProductSnapshot {
 	c.muH.RLock()
 	defer c.muH.RUnlock()
 
-	res := make([]models.ProductSnapshot, 0, len(c.product))
+	from := page * config.PageSize
+	to := (page + 1) * config.PageSize
+	if from >= uint32(len(c.product)) {
+		return make([]models.ProductSnapshot, 0, 0)
+	}
+	codes := make([]string, 0, len(c.product))
+
 	for _, product := range c.product {
+		codes = append(codes, product.Code)
+
+	}
+	sort.Strings(codes)
+
+	res := make([]models.ProductSnapshot, 0, config.PageSize)
+	for i := from; i < to; i++ {
+		if i >= uint32(len(codes)) {
+			break
+		}
+		product := c.product[codes[i]]
 		res = append(res, models.ProductSnapshot{
 			Name:      product.Name,
 			Code:      product.Code,
 			LastPrice: c.priceHistory[product.Code].GetLast(),
 		})
 	}
+
 	return res
 }
 

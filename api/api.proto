@@ -17,7 +17,8 @@ service Admin {
     };
   }
 
-  // Возвращает список всех продуктов (код, имя, последняя цена(если есть))
+  // Возвращает список продуктов на переданной странице, нумерация с 0, 20 продуктов на страницу
+  // Формат возвращаемых данных: (код, имя, последняя цена(если есть))
   rpc ProductList(ProductListRequest) returns (ProductListResponse) {
     option (google.api.http) = {
       get: "/v1/product"
@@ -85,7 +86,9 @@ message ProductCreateResponse {}
 // ProductList endpoint messages
 // ---------------------------------------------------------------------------------------------------------------------
 
-message ProductListRequest {}
+message ProductListRequest {
+  uint32 page = 1; // Номер страницы
+}
 message ProductListResponse {
   repeated ProductSnapShot productSnapShots = 1;
 }
