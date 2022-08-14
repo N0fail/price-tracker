@@ -40,6 +40,15 @@ func (c *command) Process(cmdArgs string) string {
 		log.Print(err.Error())
 		return "Error in price format, correct example: 123.45"
 	}
+
+	if priceFloat < 0 {
+		return error_codes.ErrNegativePrice.Error()
+	}
+
+	if len(code) == 0 {
+		return error_codes.ErrEmptyCode.Error()
+	}
+
 	priceTimeStamp := models.PriceTimeStamp{
 		Price: priceFloat,
 		Date:  dateTime,

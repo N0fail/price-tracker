@@ -6,6 +6,7 @@ run_server:
 run_server_cache:
 	go run cmd/bot/main.go cmd/bot/server.go -cache
 
+
 .PHONY: run_client
 run_client:
 	go run client/client.go

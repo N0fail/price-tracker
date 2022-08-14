@@ -26,15 +26,14 @@ func main() {
 
 	list(client, ctx, "empty")
 
-	productCreate(client, ctx, "1", "333", "name too short")
-	productCreate(client, ctx, "1", "4444", "ok")
+	productCreate(client, ctx, "1", "333", "ok")
 	productCreate(client, ctx, "1", "4444", "already exists")
 	productCreate(client, ctx, "2", "5555", "ok")
 
 	list(client, ctx, "2 entries")
 
 	priceTimeStampAdd(client, ctx, "3", "2 Jan 2006 15:04", 23.45, "product dont exist")
-	priceTimeStampAdd(client, ctx, "2", "2 Jan 2006 15:04", -23.45, "negative price")
+	priceTimeStampAdd(client, ctx, "2", "2 Jan 2006 15:04", -23.45, "ok")
 	priceTimeStampAdd(client, ctx, "2", "2 Jan 2006 15:04", 23.45, "ok")
 	priceTimeStampAdd(client, ctx, "2", "1 Jan 2006 15:04", 34.45, "ok")
 

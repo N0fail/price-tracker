@@ -3,12 +3,9 @@ package product
 import (
 	"context"
 	"github.com/jackc/pgx/v4/pgxpool"
-	"github.com/pkg/errors"
-	"gitlab.ozon.dev/N0fail/price-tracker/internal/config"
 	productApiPkg "gitlab.ozon.dev/N0fail/price-tracker/internal/pkg/core/product/api"
 	cacheLocalPkg "gitlab.ozon.dev/N0fail/price-tracker/internal/pkg/core/product/cache/local"
 	postgresPkg "gitlab.ozon.dev/N0fail/price-tracker/internal/pkg/core/product/database/postgres"
-	"gitlab.ozon.dev/N0fail/price-tracker/internal/pkg/core/product/error_codes"
 	"gitlab.ozon.dev/N0fail/price-tracker/internal/pkg/core/product/models"
 )
 
@@ -36,14 +33,6 @@ type core struct {
 }
 
 func (c *core) ProductCreate(ctx context.Context, product models.Product) error {
-	if product.Code == "" {
-		return error_codes.ErrEmptyCode
-	}
-
-	if len(product.Name) < config.MinNameLength {
-		return errors.Wrap(error_codes.ErrNameTooShortError, product.Name)
-	}
-
 	return c.storage.ProductCreate(ctx, product)
 }
 
@@ -56,9 +45,6 @@ func (c *core) ProductList(ctx context.Context, pageNumber, resultsPerPage uint3
 }
 
 func (c *core) AddPriceTimeStamp(ctx context.Context, code string, priceTimeStamp models.PriceTimeStamp) error {
-	if priceTimeStamp.Price < 0 {
-		return error_codes.ErrNegativePrice
-	}
 	return c.storage.AddPriceTimeStamp(ctx, code, priceTimeStamp)
 }
 

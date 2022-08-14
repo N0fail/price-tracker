@@ -31,13 +31,21 @@ func (c *command) Process(cmdArgs string) string {
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
 
+	if len(params[0]) == 0 {
+		return error_codes.ErrEmptyCode.Error()
+	}
+
+	if len(params[1]) < config.MinNameLength {
+		return error_codes.ErrNameTooShortError.Error()
+	}
+
 	err := c.product.ProductCreate(ctx, models.Product{
 		Code: params[0],
 		Name: params[1],
 	})
 	if err != nil {
 		log.Println(err.Error())
-		return error_codes.GetInternal(err).Error()
+		return error_codes.ErrExternalProblem.Error()
 	}
 	return fmt.Sprintf("product %v was successfully added", params[1])
 }

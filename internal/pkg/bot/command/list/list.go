@@ -38,7 +38,8 @@ func (c *command) Process(cmdArgs string) string {
 
 	data, err := c.product.ProductList(ctx, uint32(page), config.DefaultResultsPerPage, config.DefaultOrderBy)
 	if err != nil {
-		return error_codes.GetInternal(err).Error()
+		log.Print(err.Error())
+		return error_codes.ErrExternalProblem.Error()
 	}
 	var buffer bytes.Buffer
 	for _, p := range data {

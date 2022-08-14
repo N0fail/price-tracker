@@ -3,23 +3,21 @@ package main
 import (
 	"context"
 	"github.com/grpc-ecosystem/grpc-gateway/v2/runtime"
+	apiPkg "gitlab.ozon.dev/N0fail/price-tracker/internal/api"
 	"gitlab.ozon.dev/N0fail/price-tracker/internal/config"
+	productPkg "gitlab.ozon.dev/N0fail/price-tracker/internal/pkg/core/product"
+	pb "gitlab.ozon.dev/N0fail/price-tracker/pkg/api"
+	"google.golang.org/grpc"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/credentials/insecure"
 	"google.golang.org/grpc/status"
 	"log"
 	"net"
 	"net/http"
-	"time"
-
-	apiPkg "gitlab.ozon.dev/N0fail/price-tracker/internal/api"
-	productPkg "gitlab.ozon.dev/N0fail/price-tracker/internal/pkg/core/product"
-	pb "gitlab.ozon.dev/N0fail/price-tracker/pkg/api"
-	"google.golang.org/grpc"
 )
 
 func TimeoutIntercept(ctx context.Context, req interface{}, _ *grpc.UnaryServerInfo, handler grpc.UnaryHandler) (resp interface{}, err error) {
-	deadLineCtx, cancel := context.WithTimeout(ctx, time.Second/2)
+	deadLineCtx, cancel := context.WithTimeout(ctx, config.RequestTimeout)
 	defer cancel()
 	waitCh := make(chan struct{}, 1)
 	go func() {

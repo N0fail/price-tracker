@@ -22,9 +22,11 @@ func main() {
 	defer cancel()
 
 	useCache := flag.Bool("cache", false, "run using cache")
+	flag.Parse()
 
 	var pool *pgxpool.Pool
 	if !*useCache {
+		log.Println("Run using database")
 		// connection string
 		psqlConn := fmt.Sprintf("host=%s port=%d user=%s password=%s dbname=%s sslmode=disable", config.DbHost, config.DbPort, config.DbUser, config.DbPassword, config.DbName)
 
@@ -46,6 +48,8 @@ func main() {
 		poolConfig.MaxConnLifetime = config.DbMaxConnLifetime
 		poolConfig.MinConns = config.DbMinConns
 		poolConfig.MaxConns = config.DbMaxConns
+	} else {
+		log.Println("Run using cache")
 	}
 
 	var product productPkg.Interface

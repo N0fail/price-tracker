@@ -75,10 +75,11 @@ make generation NAME=generation_name
       ```
       make run_server_cache
       ```
+4. Отправлять запросы рекомендуется через price-tracker-validator
 
-## Доступные комманды телеграм бота
+## Доступные команды телеграм бота
 
-Доступные комманды описаны в internal/pkg/bot/command/ 
+Доступные команды описаны в internal/pkg/bot/command/ 
 
 - /help выводит краткую информацию о доступных коммандах
 
@@ -163,3 +164,8 @@ curl -X GET 'localhost:8080/v1/price?code=1'
 ```
 curl -X DELETE 'localhost:8080/v1/product?code=1'
 ```
+
+## Общение с другими сервисами
+
+Предполагается, что все аргументы валидируются с помощью price-tracker-validator в случае работы по grpc
+Либо на уровне бота при обработке его запросов
