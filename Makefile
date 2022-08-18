@@ -47,3 +47,8 @@ GENERATIONS_DIR=./migrations/generations
 .PHONY: generation
 generation:
 	goose -dir=${GENERATIONS_DIR} create $(NAME) sql
+
+.PHONY: cover
+cover:
+	go test -v $$(go list ./... | grep -v -E 'pkg/(api)') -covermode=count -coverprofile=/tmp/c.out
+	go tool cover -html=/tmp/c.out

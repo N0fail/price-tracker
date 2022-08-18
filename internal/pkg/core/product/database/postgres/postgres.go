@@ -4,22 +4,29 @@ import (
 	"context"
 	"github.com/Masterminds/squirrel"
 	"github.com/georgysavva/scany/pgxscan"
-	"github.com/jackc/pgx/v4/pgxpool"
+	"github.com/jackc/pgconn"
+	"github.com/jackc/pgx/v4"
 	"github.com/pkg/errors"
 	databasePkg "gitlab.ozon.dev/N0fail/price-tracker/internal/pkg/core/product/database"
 	"gitlab.ozon.dev/N0fail/price-tracker/internal/pkg/core/product/error_codes"
 	"gitlab.ozon.dev/N0fail/price-tracker/internal/pkg/core/product/models"
-	"log"
+	"time"
 )
 
-func New(pool *pgxpool.Pool) databasePkg.Interface {
+func New(pool DbConn) databasePkg.Interface {
 	return &postgres{
 		pool: pool,
 	}
 }
 
 type postgres struct {
-	pool *pgxpool.Pool
+	pool DbConn
+}
+
+type DbConn interface {
+	Exec(ctx context.Context, sql string, arguments ...interface{}) (pgconn.CommandTag, error)
+	Query(ctx context.Context, sql string, optionsAndArgs ...interface{}) (pgx.Rows, error)
+	QueryRow(ctx context.Context, sql string, optionsAndArgs ...interface{}) pgx.Row
 }
 
 func (p *postgres) ProductList(ctx context.Context, pageNumber, resultsPerPage uint32, orderBy string) ([]models.ProductSnapshot, error) {
@@ -41,8 +48,7 @@ func (p *postgres) ProductList(ctx context.Context, pageNumber, resultsPerPage u
 
 	rows, err := p.pool.Query(ctx, query, resultsPerPage, pageNumber*resultsPerPage, orderBy)
 	if err != nil {
-		log.Printf("postgres.ProductList: query: %v", err)
-		return nil, err
+		return nil, errors.Wrapf(err, "postgres.ProductList: query")
 	}
 	defer rows.Close()
 
@@ -51,22 +57,27 @@ func (p *postgres) ProductList(ctx context.Context, pageNumber, resultsPerPage u
 	}
 
 	result := make([]models.ProductSnapshot, 0)
-	for rows.Next() {
+	for {
 		values, _ := rows.Values()
 		var newSnapShot models.ProductSnapshot
 		if values[2] != nil {
-			err = rows.Scan(&newSnapShot.Code, &newSnapShot.Name, &newSnapShot.LastPrice.Price, &newSnapShot.LastPrice.Date)
+			newSnapShot.Code = values[0].(string)
+			newSnapShot.Name = values[1].(string)
+			newSnapShot.LastPrice = models.PriceTimeStamp{
+				Price: values[2].(float64),
+				Date:  values[3].(time.Time),
+			}
 		} else { // product with no price
 			newSnapShot.Code = values[0].(string)
 			newSnapShot.Name = values[1].(string)
 			newSnapShot.LastPrice = models.EmptyPriceTimeStamp
 		}
 
-		if err != nil {
-			log.Printf("postgres.ProductList: scan: %v", err)
-			return nil, err
-		}
 		result = append(result, newSnapShot)
+
+		if !rows.Next() {
+			break
+		}
 	}
 
 	return result, nil
@@ -79,14 +90,14 @@ func (p *postgres) ProductGet(ctx context.Context, code string) (models.Product,
 			"code": code,
 		}).PlaceholderFormat(squirrel.Dollar).ToSql()
 	if err != nil {
-		return models.Product{}, errors.Errorf("postgres.ProductGet: to sql: %v", err)
+		return models.Product{}, errors.Wrapf(err, "postgres.ProductGet: to sql")
 	}
 
 	var products []models.Product
 	err = pgxscan.Select(ctx, p.pool, &products, query, args...)
 
 	if err != nil {
-		return models.Product{}, errors.Errorf("postgres.ProductGet: query: %v", err)
+		return models.Product{}, errors.Wrapf(err, "postgres.ProductGet: query")
 	}
 
 	if len(products) == 0 {
@@ -106,7 +117,7 @@ func (p *postgres) ProductCreate(ctx context.Context, product models.Product) er
 		return err
 	}
 	if !existingProduct.IsEmpty() {
-		return errors.Wrap(error_codes.ErrProductExists, "postgres.ProductCreate")
+		return errors.Wrapf(error_codes.ErrProductExists, "postgres.ProductCreate")
 	}
 
 	query, args, err := squirrel.Insert("products").
@@ -115,12 +126,12 @@ func (p *postgres) ProductCreate(ctx context.Context, product models.Product) er
 		PlaceholderFormat(squirrel.Dollar).ToSql()
 
 	if err != nil {
-		return errors.Errorf("postgres.ProductCreate: to sql: %v", err)
+		return errors.Wrapf(err, "postgres.ProductCreate: to sql")
 	}
 
 	_, err = p.pool.Exec(ctx, query, args...)
 	if err != nil {
-		return errors.Errorf("postgres.ProductCreate: to query: %v", err)
+		return errors.Wrapf(err, "postgres.ProductCreate: to query:")
 	}
 
 	return nil
@@ -132,7 +143,7 @@ func (p *postgres) ProductDelete(ctx context.Context, code string) error {
 		return err
 	}
 	if product.IsEmpty() {
-		return errors.Wrap(error_codes.ErrProductNotExist, "postgres.ProductDelete")
+		return errors.Wrapf(error_codes.ErrProductNotExist, "postgres.ProductDelete")
 	}
 
 	query, args, err := squirrel.Delete("products").
@@ -141,12 +152,12 @@ func (p *postgres) ProductDelete(ctx context.Context, code string) error {
 		}).PlaceholderFormat(squirrel.Dollar).ToSql()
 
 	if err != nil {
-		return errors.Errorf("postgres.ProductDelete: to sql: %v", err)
+		return errors.Wrapf(err, "postgres.ProductDelete: to sql")
 	}
 
 	_, err = p.pool.Exec(ctx, query, args...)
 	if err != nil {
-		return errors.Errorf("postgres.ProductDelete: to query: %v", err)
+		return errors.Wrapf(err, "postgres.ProductDelete: to query")
 	}
 
 	return nil
@@ -158,7 +169,7 @@ func (p *postgres) AddPriceTimeStamp(ctx context.Context, code string, priceTime
 		return err
 	}
 	if existingProduct.IsEmpty() {
-		return errors.Wrap(error_codes.ErrProductNotExist, "postgres.AddPriceTimeStamp")
+		return errors.Wrapf(error_codes.ErrProductNotExist, "postgres.AddPriceTimeStamp")
 	}
 
 	query, args, err := squirrel.Insert("price_history").
@@ -167,12 +178,12 @@ func (p *postgres) AddPriceTimeStamp(ctx context.Context, code string, priceTime
 		PlaceholderFormat(squirrel.Dollar).ToSql()
 
 	if err != nil {
-		return errors.Errorf("postgres.AddPriceTimeStamp: to sql: %v", err)
+		return errors.Wrapf(err, "postgres.AddPriceTimeStamp: to sql")
 	}
 
 	_, err = p.pool.Exec(ctx, query, args...)
 	if err != nil {
-		return errors.Errorf("postgres.AddPriceTimeStamp: to query: %v", err)
+		return errors.Wrapf(err, "postgres.AddPriceTimeStamp: to query")
 	}
 
 	return nil
@@ -184,7 +195,7 @@ func (p *postgres) FullHistory(ctx context.Context, code string) (models.PriceHi
 		return nil, err
 	}
 	if existingProduct.IsEmpty() {
-		return nil, errors.Wrap(error_codes.ErrProductNotExist, "postgres.FullHistory")
+		return nil, errors.Wrapf(error_codes.ErrProductNotExist, "postgres.FullHistory")
 	}
 
 	query, args, err := squirrel.Select("price, date").
@@ -196,13 +207,13 @@ func (p *postgres) FullHistory(ctx context.Context, code string) (models.PriceHi
 		PlaceholderFormat(squirrel.Dollar).ToSql()
 
 	if err != nil {
-		return nil, errors.Errorf("postgres.FullHistory: to sql: %v", err)
+		return nil, errors.Wrapf(err, "postgres.FullHistory: to sql")
 	}
 
 	var priceHistory models.PriceHistory
 	err = pgxscan.Select(ctx, p.pool, &priceHistory, query, args...)
 	if err != nil {
-		return nil, errors.Errorf("postgres.FullHistory: to query: %v", err)
+		return nil, errors.Wrapf(err, "postgres.FullHistory: to query")
 	}
 
 	return priceHistory, nil

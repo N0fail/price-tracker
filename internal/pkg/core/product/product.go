@@ -2,7 +2,6 @@ package product
 
 import (
 	"context"
-	"github.com/jackc/pgx/v4/pgxpool"
 	productApiPkg "gitlab.ozon.dev/N0fail/price-tracker/internal/pkg/core/product/api"
 	cacheLocalPkg "gitlab.ozon.dev/N0fail/price-tracker/internal/pkg/core/product/cache/local"
 	postgresPkg "gitlab.ozon.dev/N0fail/price-tracker/internal/pkg/core/product/database/postgres"
@@ -13,7 +12,7 @@ type Interface interface {
 	productApiPkg.Interface
 }
 
-func New(pool *pgxpool.Pool) Interface {
+func New(pool postgresPkg.DbConn) Interface {
 	var coreObj core
 	// если передали pool используем БД, иначе кэш
 	if pool == nil {
