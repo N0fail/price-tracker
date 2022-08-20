@@ -34,6 +34,12 @@ up_db:
 	docker-compose build
 	docker-compose up -d postgres
 
+.PHONY: up_db_test
+up_db_test:
+	docker-compose build
+	docker-compose up -d test
+
+
 .PHONE: down_db
 down_db:
 	docker-compose down

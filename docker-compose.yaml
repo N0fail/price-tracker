@@ -13,3 +13,17 @@ services:
     ports:
       - "5432:5432"
     restart: always
+
+  test:
+    image: postgres:14.4
+    environment:
+      POSTGRES_USER: test
+      POSTGRES_PASSWORD: test
+      POSTGRES_DB: test
+    container_name: 'postgresql-container-price-tracker-test'
+    volumes:
+      - ./postgres.conf:/etc/postgresql/postgresql.conf # конфиг БД
+    command: postgres -c config_file=/etc/postgresql/postgresql.conf
+    ports:
+      - "5432:5432"
+    restart: always

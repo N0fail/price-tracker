@@ -2,6 +2,7 @@ package postgres
 
 import (
 	"context"
+	"fmt"
 	"github.com/Masterminds/squirrel"
 	"github.com/georgysavva/scany/pgxscan"
 	"github.com/jackc/pgconn"
@@ -34,7 +35,7 @@ func (p *postgres) ProductList(ctx context.Context, pageNumber, resultsPerPage u
 	SELECT products.code, products.name, last_price.price, last_price.date
 	FROM (SELECT *
 		FROM products
-		ORDER BY $3
+		ORDER BY %v
 		LIMIT $1
 		OFFSET $2) as products
 	LEFT JOIN
@@ -45,8 +46,8 @@ func (p *postgres) ProductList(ctx context.Context, pageNumber, resultsPerPage u
 	FROM price_history) ranks
 	WHERE rank < 2) last_price on products.code = last_price.code
 	`
-
-	rows, err := p.pool.Query(ctx, query, resultsPerPage, pageNumber*resultsPerPage, orderBy)
+	squery := fmt.Sprintf(query, orderBy)
+	rows, err := p.pool.Query(ctx, squery, resultsPerPage, pageNumber*resultsPerPage)
 	if err != nil {
 		return nil, errors.Wrapf(err, "postgres.ProductList: query")
 	}
