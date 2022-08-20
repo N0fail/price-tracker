@@ -35,33 +35,33 @@ func (m *MockInterface) EXPECT() *MockInterfaceMockRecorder {
 	return m.recorder
 }
 
-// AddPriceTimeStamp mocks base method.
-func (m *MockInterface) AddPriceTimeStamp(ctx context.Context, code string, priceTimeStamp models.PriceTimeStamp) error {
+// PriceTimeStampAdd mocks base method.
+func (m *MockInterface) PriceTimeStampAdd(ctx context.Context, code string, priceTimeStamp models.PriceTimeStamp) error {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "AddPriceTimeStamp", ctx, code, priceTimeStamp)
+	ret := m.ctrl.Call(m, "PriceTimeStampAdd", ctx, code, priceTimeStamp)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
-// AddPriceTimeStamp indicates an expected call of AddPriceTimeStamp.
-func (mr *MockInterfaceMockRecorder) AddPriceTimeStamp(ctx, code, priceTimeStamp interface{}) *gomock.Call {
+// PriceTimeStampAdd indicates an expected call of PriceTimeStampAdd.
+func (mr *MockInterfaceMockRecorder) PriceTimeStampAdd(ctx, code, priceTimeStamp interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AddPriceTimeStamp", reflect.TypeOf((*MockInterface)(nil).AddPriceTimeStamp), ctx, code, priceTimeStamp)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "PriceTimeStampAdd", reflect.TypeOf((*MockInterface)(nil).PriceTimeStampAdd), ctx, code, priceTimeStamp)
 }
 
-// FullHistory mocks base method.
-func (m *MockInterface) FullHistory(ctx context.Context, code string) (models.PriceHistory, error) {
+// PriceHistory mocks base method.
+func (m *MockInterface) PriceHistory(ctx context.Context, code string) (models.PriceHistory, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "FullHistory", ctx, code)
+	ret := m.ctrl.Call(m, "PriceHistory", ctx, code)
 	ret0, _ := ret[0].(models.PriceHistory)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
-// FullHistory indicates an expected call of FullHistory.
-func (mr *MockInterfaceMockRecorder) FullHistory(ctx, code interface{}) *gomock.Call {
+// PriceHistory indicates an expected call of PriceHistory.
+func (mr *MockInterfaceMockRecorder) PriceHistory(ctx, code interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "FullHistory", reflect.TypeOf((*MockInterface)(nil).FullHistory), ctx, code)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "PriceHistory", reflect.TypeOf((*MockInterface)(nil).PriceHistory), ctx, code)
 }
 
 // ProductCreate mocks base method.

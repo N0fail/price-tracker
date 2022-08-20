@@ -110,7 +110,7 @@ func (c *cache) ProductDelete(ctx context.Context, code string) error {
 	return nil
 }
 
-func (c *cache) AddPriceTimeStamp(ctx context.Context, code string, priceTimeStamp models.PriceTimeStamp) error {
+func (c *cache) PriceTimeStampAdd(ctx context.Context, code string, priceTimeStamp models.PriceTimeStamp) error {
 	c.poolCh <- struct{}{}
 	defer func() {
 		<-c.poolCh
@@ -129,7 +129,7 @@ func (c *cache) AddPriceTimeStamp(ctx context.Context, code string, priceTimeSta
 	return nil
 }
 
-func (c *cache) FullHistory(ctx context.Context, code string) (models.PriceHistory, error) {
+func (c *cache) PriceHistory(ctx context.Context, code string) (models.PriceHistory, error) {
 	c.poolCh <- struct{}{}
 	defer func() {
 		<-c.poolCh

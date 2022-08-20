@@ -163,13 +163,13 @@ func (p *postgres) ProductDelete(ctx context.Context, code string) error {
 	return nil
 }
 
-func (p *postgres) AddPriceTimeStamp(ctx context.Context, code string, priceTimeStamp models.PriceTimeStamp) error {
+func (p *postgres) PriceTimeStampAdd(ctx context.Context, code string, priceTimeStamp models.PriceTimeStamp) error {
 	existingProduct, err := p.ProductGet(ctx, code)
 	if err != nil {
 		return err
 	}
 	if existingProduct.IsEmpty() {
-		return errors.Wrapf(error_codes.ErrProductNotExist, "postgres.AddPriceTimeStamp")
+		return errors.Wrapf(error_codes.ErrProductNotExist, "postgres.PriceTimeStampAdd")
 	}
 
 	query, args, err := squirrel.Insert("price_history").
@@ -178,24 +178,24 @@ func (p *postgres) AddPriceTimeStamp(ctx context.Context, code string, priceTime
 		PlaceholderFormat(squirrel.Dollar).ToSql()
 
 	if err != nil {
-		return errors.Wrapf(err, "postgres.AddPriceTimeStamp: to sql")
+		return errors.Wrapf(err, "postgres.PriceTimeStampAdd: to sql")
 	}
 
 	_, err = p.pool.Exec(ctx, query, args...)
 	if err != nil {
-		return errors.Wrapf(err, "postgres.AddPriceTimeStamp: to query")
+		return errors.Wrapf(err, "postgres.PriceTimeStampAdd: to query")
 	}
 
 	return nil
 }
 
-func (p *postgres) FullHistory(ctx context.Context, code string) (models.PriceHistory, error) {
+func (p *postgres) PriceHistory(ctx context.Context, code string) (models.PriceHistory, error) {
 	existingProduct, err := p.ProductGet(ctx, code)
 	if err != nil {
 		return nil, err
 	}
 	if existingProduct.IsEmpty() {
-		return nil, errors.Wrapf(error_codes.ErrProductNotExist, "postgres.FullHistory")
+		return nil, errors.Wrapf(error_codes.ErrProductNotExist, "postgres.PriceHistory")
 	}
 
 	query, args, err := squirrel.Select("price, date").
@@ -207,13 +207,13 @@ func (p *postgres) FullHistory(ctx context.Context, code string) (models.PriceHi
 		PlaceholderFormat(squirrel.Dollar).ToSql()
 
 	if err != nil {
-		return nil, errors.Wrapf(err, "postgres.FullHistory: to sql")
+		return nil, errors.Wrapf(err, "postgres.PriceHistory: to sql")
 	}
 
 	var priceHistory models.PriceHistory
 	err = pgxscan.Select(ctx, p.pool, &priceHistory, query, args...)
 	if err != nil {
-		return nil, errors.Wrapf(err, "postgres.FullHistory: to query")
+		return nil, errors.Wrapf(err, "postgres.PriceHistory: to query")
 	}
 
 	return priceHistory, nil

@@ -57,7 +57,7 @@ func (c *command) Process(cmdArgs string) string {
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
 
-	err = c.product.AddPriceTimeStamp(ctx, code, priceTimeStamp)
+	err = c.product.PriceTimeStampAdd(ctx, code, priceTimeStamp)
 	if err != nil {
 		log.Println(err.Error())
 		return error_codes.GetInternal(err).Error()

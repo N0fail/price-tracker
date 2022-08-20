@@ -22,7 +22,7 @@ func (c *command) Process(cmdArgs string) string {
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
 
-	history, err := c.product.FullHistory(ctx, cmdArgs)
+	history, err := c.product.PriceHistory(ctx, cmdArgs)
 	if err != nil {
 		log.Println(err.Error())
 		return error_codes.GetInternal(err).Error()

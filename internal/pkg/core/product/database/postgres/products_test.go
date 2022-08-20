@@ -288,7 +288,7 @@ func TestProductDelete(t *testing.T) {
 	})
 }
 
-func TestAddPriceTimeStamp(t *testing.T) {
+func TestPriceTimeStampAdd(t *testing.T) {
 	t.Run("get product error", func(t *testing.T) {
 		// arrange
 		ctx := context.Background()
@@ -306,7 +306,7 @@ func TestAddPriceTimeStamp(t *testing.T) {
 			WillReturnError(ErrQuery)
 
 		// act
-		err := f.postgres.AddPriceTimeStamp(ctx, productCode, priceTimeStamp)
+		err := f.postgres.PriceTimeStampAdd(ctx, productCode, priceTimeStamp)
 
 		// assert
 		require.Equal(t, true, errors.Is(err, ErrQuery))
@@ -330,7 +330,7 @@ func TestAddPriceTimeStamp(t *testing.T) {
 			WillReturnRows(rows)
 
 		// act
-		err := f.postgres.AddPriceTimeStamp(ctx, productCode, priceTimeStamp)
+		err := f.postgres.PriceTimeStampAdd(ctx, productCode, priceTimeStamp)
 
 		// assert
 		require.Equal(t, true, errors.Is(err, error_codes.ErrProductNotExist))
@@ -359,7 +359,7 @@ func TestAddPriceTimeStamp(t *testing.T) {
 			WillReturnError(ErrQuery)
 
 		// act
-		err := f.postgres.AddPriceTimeStamp(ctx, productCode, priceTimeStamp)
+		err := f.postgres.PriceTimeStampAdd(ctx, productCode, priceTimeStamp)
 
 		// assert
 		require.Equal(t, true, errors.Is(err, ErrQuery))
@@ -388,7 +388,7 @@ func TestAddPriceTimeStamp(t *testing.T) {
 			WillReturnResult(pgxmock.NewResult("", 1))
 
 		// act
-		err := f.postgres.AddPriceTimeStamp(ctx, productCode, priceTimeStamp)
+		err := f.postgres.PriceTimeStampAdd(ctx, productCode, priceTimeStamp)
 
 		// assert
 		require.Nil(t, err)
@@ -409,7 +409,7 @@ func TestFullHistory(t *testing.T) {
 			WillReturnError(ErrQuery)
 
 		// act
-		_, err := f.postgres.FullHistory(ctx, productCode)
+		_, err := f.postgres.PriceHistory(ctx, productCode)
 
 		// assert
 		require.Equal(t, true, errors.Is(err, ErrQuery))
@@ -429,7 +429,7 @@ func TestFullHistory(t *testing.T) {
 			WillReturnRows(rows)
 
 		// act
-		_, err := f.postgres.FullHistory(ctx, productCode)
+		_, err := f.postgres.PriceHistory(ctx, productCode)
 
 		// assert
 		require.Equal(t, true, errors.Is(err, error_codes.ErrProductNotExist))
@@ -454,7 +454,7 @@ func TestFullHistory(t *testing.T) {
 			WillReturnError(ErrQuery)
 
 		// act
-		_, err := f.postgres.FullHistory(ctx, productCode)
+		_, err := f.postgres.PriceHistory(ctx, productCode)
 
 		// assert
 		require.Equal(t, true, errors.Is(err, ErrQuery))
@@ -488,7 +488,7 @@ func TestFullHistory(t *testing.T) {
 				WillReturnRows(historyRows)
 
 			// act
-			history, err := f.postgres.FullHistory(ctx, productCode)
+			history, err := f.postgres.PriceHistory(ctx, productCode)
 
 			// assert
 			require.Nil(t, err)

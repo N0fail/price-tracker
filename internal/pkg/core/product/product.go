@@ -43,10 +43,10 @@ func (c *core) ProductList(ctx context.Context, pageNumber, resultsPerPage uint3
 	return c.storage.ProductList(ctx, pageNumber, resultsPerPage, orderBy)
 }
 
-func (c *core) AddPriceTimeStamp(ctx context.Context, code string, priceTimeStamp models.PriceTimeStamp) error {
-	return c.storage.AddPriceTimeStamp(ctx, code, priceTimeStamp)
+func (c *core) PriceTimeStampAdd(ctx context.Context, code string, priceTimeStamp models.PriceTimeStamp) error {
+	return c.storage.PriceTimeStampAdd(ctx, code, priceTimeStamp)
 }
 
-func (c *core) FullHistory(ctx context.Context, code string) (models.PriceHistory, error) {
-	return c.storage.FullHistory(ctx, code)
+func (c *core) PriceHistory(ctx context.Context, code string) (models.PriceHistory, error) {
+	return c.storage.PriceHistory(ctx, code)
 }

@@ -12,7 +12,7 @@ import (
 	"time"
 )
 
-func New(p productPkg.Interface) pb.AdminServer {
+func New(p productPkg.Interface) *implementation {
 	return &implementation{
 		product: p,
 	}
@@ -48,7 +48,7 @@ func (i *implementation) ProductList(ctx context.Context, in *pb.ProductListRequ
 
 	productSnapShots, err := i.product.ProductList(ctx, in.PageNumber, resultsPerPage, order_by)
 	if err != nil {
-		return &pb.ProductListResponse{}, error_codes.GetInternal(err)
+		return nil, error_codes.GetInternal(err)
 	}
 
 	result := make([]*pb.ProductSnapShot, 0, len(productSnapShots))
@@ -72,6 +72,7 @@ func (i *implementation) ProductList(ctx context.Context, in *pb.ProductListRequ
 		ProductSnapShots: result,
 	}, nil
 }
+
 func (i *implementation) ProductDelete(ctx context.Context, in *pb.ProductDeleteRequest) (*pb.ProductDeleteResponse, error) {
 	if err := i.product.ProductDelete(ctx, in.Code); err != nil {
 		if errors.Is(err, error_codes.ErrProductNotExist) {
@@ -82,12 +83,13 @@ func (i *implementation) ProductDelete(ctx context.Context, in *pb.ProductDelete
 
 	return &pb.ProductDeleteResponse{}, nil
 }
+
 func (i *implementation) PriceTimeStampAdd(ctx context.Context, in *pb.PriceTimeStampAddRequest) (*pb.PriceTimeStampAddResponse, error) {
 	ts := models.PriceTimeStamp{
 		Price: in.GetPrice(),
 		Date:  time.Unix(in.GetTs(), 0),
 	}
-	if err := i.product.AddPriceTimeStamp(ctx, in.Code, ts); err != nil {
+	if err := i.product.PriceTimeStampAdd(ctx, in.Code, ts); err != nil {
 		if errors.Is(err, error_codes.ErrProductNotExist) {
 			return nil, status.Error(codes.InvalidArgument, err.Error())
 		}
@@ -96,8 +98,9 @@ func (i *implementation) PriceTimeStampAdd(ctx context.Context, in *pb.PriceTime
 
 	return &pb.PriceTimeStampAddResponse{}, nil
 }
+
 func (i *implementation) PriceHistory(ctx context.Context, in *pb.PriceHistoryRequest) (*pb.PriceHistoryResponse, error) {
-	priceHistory, err := i.product.FullHistory(ctx, in.GetCode())
+	priceHistory, err := i.product.PriceHistory(ctx, in.GetCode())
 	if err != nil {
 		if errors.Is(err, error_codes.ErrProductNotExist) {
 			return nil, status.Error(codes.InvalidArgument, err.Error())

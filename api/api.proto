@@ -110,7 +110,7 @@ message ProductDeleteRequest {
 message ProductDeleteResponse {}
 
 // ---------------------------------------------------------------------------------------------------------------------
-// AddPriceTimeStamp endpoint messages
+// PriceTimeStampAdd endpoint messages
 // ---------------------------------------------------------------------------------------------------------------------
 
 message PriceTimeStampAddRequest {
