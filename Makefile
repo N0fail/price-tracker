@@ -58,3 +58,14 @@ generation:
 cover:
 	go test -v $$(go list ./... | grep -v -E 'pkg/(api)') -covermode=count -coverprofile=/tmp/c.out
 	go tool cover -html=/tmp/c.out
+
+.PHONY: up_kafka
+up_kafka:
+	docker-compose build
+	docker-compose up -d zk1
+	docker-compose up -d zk2
+	docker-compose up -d zk3
+	docker-compose up -d kafka-1
+	docker-compose up -d kafka-2
+	docker-compose up -d kafka-1
+	docker-compose up -d kafka-ui

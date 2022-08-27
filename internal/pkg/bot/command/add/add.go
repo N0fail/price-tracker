@@ -3,12 +3,12 @@ package add
 import (
 	"context"
 	"fmt"
+	"github.com/sirupsen/logrus"
 	"gitlab.ozon.dev/N0fail/price-tracker/internal/config"
 	commandPkg "gitlab.ozon.dev/N0fail/price-tracker/internal/pkg/bot/command"
 	productPkg "gitlab.ozon.dev/N0fail/price-tracker/internal/pkg/core/product"
 	"gitlab.ozon.dev/N0fail/price-tracker/internal/pkg/core/product/error_codes"
 	"gitlab.ozon.dev/N0fail/price-tracker/internal/pkg/core/product/models"
-	"log"
 	"strings"
 )
 
@@ -44,7 +44,7 @@ func (c *command) Process(cmdArgs string) string {
 		Name: params[1],
 	})
 	if err != nil {
-		log.Println(err.Error())
+		logrus.Error(err.Error())
 		return error_codes.ErrExternalProblem.Error()
 	}
 	return fmt.Sprintf("product %v was successfully added", params[1])

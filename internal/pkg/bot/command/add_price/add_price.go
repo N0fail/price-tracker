@@ -3,12 +3,12 @@ package add_price
 import (
 	"context"
 	"fmt"
+	"github.com/sirupsen/logrus"
 	"gitlab.ozon.dev/N0fail/price-tracker/internal/config"
 	commandPkg "gitlab.ozon.dev/N0fail/price-tracker/internal/pkg/bot/command"
 	productPkg "gitlab.ozon.dev/N0fail/price-tracker/internal/pkg/core/product"
 	"gitlab.ozon.dev/N0fail/price-tracker/internal/pkg/core/product/error_codes"
 	"gitlab.ozon.dev/N0fail/price-tracker/internal/pkg/core/product/models"
-	"log"
 	"strconv"
 	"strings"
 	"time"
@@ -32,12 +32,12 @@ func (c *command) Process(cmdArgs string) string {
 	code, date, price := params[0], params[1], params[2]
 	dateTime, err := time.Parse(config.DateFormat, date)
 	if err != nil {
-		log.Print(err.Error())
+		logrus.Error(err.Error())
 		return "Error in date format, correct example: " + config.DateFormat
 	}
 	priceFloat, err := strconv.ParseFloat(price, 64)
 	if err != nil {
-		log.Print(err.Error())
+		logrus.Error(err.Error())
 		return "Error in price format, correct example: 123.45"
 	}
 
@@ -59,7 +59,7 @@ func (c *command) Process(cmdArgs string) string {
 
 	err = c.product.PriceTimeStampAdd(ctx, code, priceTimeStamp)
 	if err != nil {
-		log.Println(err.Error())
+		logrus.Error(err.Error())
 		return error_codes.GetInternal(err).Error()
 	}
 	return fmt.Sprintf("Price %v was successfully added for product %v", priceTimeStamp.String(), code)

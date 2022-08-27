@@ -4,11 +4,11 @@ import (
 	"bytes"
 	"context"
 	"fmt"
+	"github.com/sirupsen/logrus"
 	"gitlab.ozon.dev/N0fail/price-tracker/internal/config"
 	commandPkg "gitlab.ozon.dev/N0fail/price-tracker/internal/pkg/bot/command"
 	productPkg "gitlab.ozon.dev/N0fail/price-tracker/internal/pkg/core/product"
 	"gitlab.ozon.dev/N0fail/price-tracker/internal/pkg/core/product/error_codes"
-	"log"
 	"strconv"
 )
 
@@ -28,7 +28,7 @@ func (c *command) Process(cmdArgs string) string {
 
 	page, err := strconv.ParseUint(cmdArgs, 10, 32)
 	if err != nil {
-		log.Print(err.Error())
+		logrus.Error(err.Error())
 		return "Error in page format, correct example: 2"
 	}
 	if page == 0 {
@@ -38,7 +38,7 @@ func (c *command) Process(cmdArgs string) string {
 
 	data, err := c.product.ProductList(ctx, uint32(page), config.DefaultResultsPerPage, config.DefaultOrderBy)
 	if err != nil {
-		log.Print(err.Error())
+		logrus.Error(err.Error())
 		return error_codes.ErrExternalProblem.Error()
 	}
 	var buffer bytes.Buffer

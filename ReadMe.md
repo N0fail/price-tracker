@@ -140,29 +140,29 @@ make .deps
 
 ## SWAGGER
 
-Для проекта также запускается сваггер по адресу http://localhost:8080/swagger/
+Для проекта также запускается сваггер по адресу http://localhost:8100/swagger/
 
 ## Примеры запросов к REST
 
 - Получение списка продуктов с последней ценой
 ```
-curl -X GET 'http://localhost:8080/v1/product?pageNumber=2&resultsPerPage=5&orderBy=code'
+curl -X GET 'http://localhost:8100/v1/product?pageNumber=2&resultsPerPage=5&orderBy=code'
 ```
 - Добавление продукта
 ```
-curl -X POST localhost:8080/v1/product -d '{"code":"qwer1234", "name":"Guitar"}'
+curl -X POST localhost:8100/v1/product -d '{"code":"qwer1234", "name":"Guitar"}'
 ```
 - Добавление цены продукта
 ```
-curl -X PUT localhost:8080/v1/price -d '{"code":"1", "price":123, "ts":1234567}'
+curl -X PUT localhost:8100/v1/price -d '{"code":"1", "price":123, "ts":1234567}'
 ```
 - Получение истории цен продукта
 ```
-curl -X GET 'localhost:8080/v1/price?code=1'
+curl -X GET 'localhost:8100/v1/price?code=1'
 ```
 - Удаление продукта
 ```
-curl -X DELETE 'localhost:8080/v1/product?code=1'
+curl -X DELETE 'localhost:8100/v1/product?code=1'
 ```
 
 ## Общение с другими сервисами
@@ -189,3 +189,20 @@ sh migrate_test.sh
 ```
 
 Интеграционные тесты находятся в папке tests
+
+### Kafka
+
+Запросы от валидатора к основному сервису на создание/удаление продукта и добавление цен переведены на kafka
+Для запуска kafka нужно выполнить
+```
+make up_kafka
+```
+Kafka-ui запускается по адресу 
+```
+http://localhost:8080/ui/
+```
+Также добавлены счетчики запросов и ошибок(requestsCounter, errorsCounter), их можно посмотреть по адресу
+```
+http://127.0.0.1:8200/debug/vars
+```
+

@@ -5,7 +5,9 @@ import (
 	"flag"
 	"fmt"
 	"github.com/jackc/pgx/v4/pgxpool"
+	"github.com/sirupsen/logrus"
 	"gitlab.ozon.dev/N0fail/price-tracker/internal/config"
+	"gitlab.ozon.dev/N0fail/price-tracker/internal/kafka"
 	botPkg "gitlab.ozon.dev/N0fail/price-tracker/internal/pkg/bot"
 	cmdAddPkg "gitlab.ozon.dev/N0fail/price-tracker/internal/pkg/bot/command/add"
 	cmdAddPricePkg "gitlab.ozon.dev/N0fail/price-tracker/internal/pkg/bot/command/add_price"
@@ -26,7 +28,7 @@ func main() {
 
 	var pool *pgxpool.Pool
 	if !*useCache {
-		log.Println("Run using database")
+		logrus.Info("Run using database")
 		// connection string
 		psqlConn := fmt.Sprintf("host=%s port=%d user=%s password=%s dbname=%s sslmode=disable", config.DbHost, config.DbPort, config.DbUser, config.DbPassword, config.DbName)
 
@@ -49,7 +51,7 @@ func main() {
 		poolConfig.MinConns = config.DbMinConns
 		poolConfig.MaxConns = config.DbMaxConns
 	} else {
-		log.Println("Run using cache")
+		logrus.Info("Run using cache")
 	}
 
 	var product productPkg.Interface
@@ -58,6 +60,7 @@ func main() {
 	}
 	go runBot(product)
 	go runREST()
+	go kafka.Run(product)
 	runGRPCServer(product)
 }
 

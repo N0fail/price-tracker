@@ -3,6 +3,7 @@ package bot
 import (
 	tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api"
 	"github.com/pkg/errors"
+	"github.com/sirupsen/logrus"
 	"gitlab.ozon.dev/N0fail/price-tracker/internal/config"
 	commandPkg "gitlab.ozon.dev/N0fail/price-tracker/internal/pkg/bot/command"
 	"log"
@@ -55,7 +56,7 @@ func (c *commander) GetCommands() []commandPkg.Interface {
 
 func (c *commander) Run() {
 	bot := c.bot
-	log.Printf("Authorized on account %s", bot.Self.UserName)
+	logrus.Info("Authorized on account %s", bot.Self.UserName)
 	u := tgbotapi.NewUpdate(0)
 	u.Timeout = config.GetUpdatesTimeout
 
@@ -65,7 +66,7 @@ func (c *commander) Run() {
 		if update.Message == nil {
 			continue
 		}
-		log.Printf("[%s] %s", update.Message.From.UserName, update.Message.Text)
+		logrus.Info("[%s] %s", update.Message.From.UserName, update.Message.Text)
 		var msg tgbotapi.MessageConfig
 		if cmd := update.Message.Command(); cmd != "" {
 			msg = tgbotapi.NewMessage(update.Message.Chat.ID, c.applyCommand(cmd, update.Message.CommandArguments()))

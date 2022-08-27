@@ -3,10 +3,10 @@ package delete
 import (
 	"context"
 	"fmt"
+	"github.com/sirupsen/logrus"
 	commandPkg "gitlab.ozon.dev/N0fail/price-tracker/internal/pkg/bot/command"
 	productPkg "gitlab.ozon.dev/N0fail/price-tracker/internal/pkg/core/product"
 	"gitlab.ozon.dev/N0fail/price-tracker/internal/pkg/core/product/error_codes"
-	"log"
 )
 
 func New(p productPkg.Interface) commandPkg.Interface {
@@ -25,7 +25,7 @@ func (c *command) Process(cmdArgs string) string {
 
 	err := c.product.ProductDelete(ctx, cmdArgs)
 	if err != nil {
-		log.Println(err.Error())
+		logrus.Error(err.Error())
 		return error_codes.GetInternal(err).Error()
 	}
 	return fmt.Sprintf("product %v was successfully removed", cmdArgs)
