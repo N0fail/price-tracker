@@ -17,6 +17,7 @@ import (
 	cmdPriceHistoryPkg "gitlab.ozon.dev/N0fail/price-tracker/internal/pkg/bot/command/price_history"
 	productPkg "gitlab.ozon.dev/N0fail/price-tracker/internal/pkg/core/product"
 	"log"
+	"net/http"
 )
 
 func main() {
@@ -58,9 +59,10 @@ func main() {
 	{
 		product = productPkg.New(pool)
 	}
-	go runBot(product)
+	//go runBot(product)
 	go runREST()
 	go kafka.Run(product)
+	go http.ListenAndServe("127.0.0.1:8200", nil)
 	runGRPCServer(product)
 }
 

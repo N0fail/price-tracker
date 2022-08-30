@@ -10,7 +10,6 @@ import (
 	"gitlab.ozon.dev/N0fail/price-tracker/internal/pkg/core/product/api"
 	"gitlab.ozon.dev/N0fail/price-tracker/internal/pkg/core/product/models"
 	"log"
-	"net/http"
 	_ "net/http/pprof"
 	"time"
 )
@@ -136,7 +135,6 @@ func Run(productApi api.Interface) {
 	ctx := context.Background()
 	requestsCounter := counter.New("requestsCounter")
 	errorsCounter := counter.New("errorsCounter")
-	http.ListenAndServe("127.0.0.1:8200", nil)
 
 	go startHandler(ctx, config.ProductCreateTopic, &ProductCreateHandler{
 		IncomeHandler{
