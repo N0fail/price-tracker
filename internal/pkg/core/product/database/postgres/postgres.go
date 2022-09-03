@@ -12,6 +12,7 @@ import (
 	"github.com/pkg/errors"
 	"github.com/sirupsen/logrus"
 	"gitlab.ozon.dev/N0fail/price-tracker/internal/config"
+	"gitlab.ozon.dev/N0fail/price-tracker/internal/kafka/counter"
 	databasePkg "gitlab.ozon.dev/N0fail/price-tracker/internal/pkg/core/product/database"
 	"gitlab.ozon.dev/N0fail/price-tracker/internal/pkg/core/product/error_codes"
 	"gitlab.ozon.dev/N0fail/price-tracker/internal/pkg/core/product/models"
@@ -20,14 +21,18 @@ import (
 
 func New(pool DbConn) databasePkg.Interface {
 	return &postgres{
-		pool: pool,
-		mem:  memcache.New(config.MemcachedAddress),
+		pool:             pool,
+		mem:              memcache.New(config.MemcachedAddress),
+		cacheHitCounter:  counter.New("cacheHitCounter"),
+		cacheMissCounter: counter.New("cacheMissCounter"),
 	}
 }
 
 type postgres struct {
-	pool DbConn
-	mem  *memcache.Client
+	pool             DbConn
+	mem              *memcache.Client
+	cacheHitCounter  *counter.Counter
+	cacheMissCounter *counter.Counter
 }
 
 type DbConn interface {
@@ -94,14 +99,14 @@ func (p *postgres) ProductGet(ctx context.Context, code string) (models.Product,
 	key := fmt.Sprintf("%x", md5.Sum([]byte("ProductGet\n"+code)))
 	item, err := p.mem.Get(key)
 	if errors.Is(err, memcache.ErrCacheMiss) {
-		//inc miss counter
+		p.cacheMissCounter.Inc()
 	} else if err != nil {
 		logrus.Errorf("ProductGet, get from cache: %v", err.Error())
 		item = nil
 	}
 
 	if item != nil {
-		// inc hit counter
+		p.cacheHitCounter.Inc()
 		result := models.Product{}
 		err := result.UnmarshalBinary(item.Value)
 		if err != nil {
@@ -245,14 +250,14 @@ func (p *postgres) PriceHistory(ctx context.Context, code string) (models.PriceH
 	key := fmt.Sprintf("%x", md5.Sum([]byte("PriceHistory\n"+code)))
 	item, err := p.mem.Get(key)
 	if errors.Is(err, memcache.ErrCacheMiss) {
-		//inc miss counter
+		p.cacheMissCounter.Inc()
 	} else if err != nil {
 		logrus.Errorf("PriceHistory, get from cache: %v", err.Error())
 		item = nil
 	}
 
 	if item != nil {
-		// inc hit counter
+		p.cacheHitCounter.Inc()
 		result := models.PriceHistory{}
 		err := result.UnmarshalBinary(item.Value)
 		if err != nil {
