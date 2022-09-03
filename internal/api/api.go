@@ -38,15 +38,15 @@ func (i *implementation) ProductCreate(ctx context.Context, in *pb.ProductCreate
 }
 
 func (i *implementation) ProductList(ctx context.Context, in *pb.ProductListRequest) (*pb.ProductListResponse, error) {
-	var order_by string
+	var orderBy string
 	if in.GetOrderBy() == pb.ProductListRequest_name {
-		order_by = "name"
+		orderBy = "name"
 	} else {
-		order_by = "code"
+		orderBy = "code"
 	}
 	resultsPerPage := in.ResultsPerPage
 
-	productSnapShots, err := i.product.ProductList(ctx, in.PageNumber, resultsPerPage, order_by)
+	productSnapShots, err := i.product.ProductList(ctx, in.PageNumber, resultsPerPage, orderBy)
 	if err != nil {
 		return nil, error_codes.GetInternal(err)
 	}
