@@ -2,12 +2,16 @@ package postgres
 
 import (
 	"context"
+	"crypto/md5"
 	"fmt"
 	"github.com/Masterminds/squirrel"
+	"github.com/bradfitz/gomemcache/memcache"
 	"github.com/georgysavva/scany/pgxscan"
 	"github.com/jackc/pgconn"
 	"github.com/jackc/pgx/v4"
 	"github.com/pkg/errors"
+	"github.com/sirupsen/logrus"
+	"gitlab.ozon.dev/N0fail/price-tracker/internal/config"
 	databasePkg "gitlab.ozon.dev/N0fail/price-tracker/internal/pkg/core/product/database"
 	"gitlab.ozon.dev/N0fail/price-tracker/internal/pkg/core/product/error_codes"
 	"gitlab.ozon.dev/N0fail/price-tracker/internal/pkg/core/product/models"
@@ -17,11 +21,13 @@ import (
 func New(pool DbConn) databasePkg.Interface {
 	return &postgres{
 		pool: pool,
+		mem:  memcache.New(config.MemcachedAddress),
 	}
 }
 
 type postgres struct {
 	pool DbConn
+	mem  *memcache.Client
 }
 
 type DbConn interface {
@@ -85,6 +91,26 @@ func (p *postgres) ProductList(ctx context.Context, pageNumber, resultsPerPage u
 }
 
 func (p *postgres) ProductGet(ctx context.Context, code string) (models.Product, error) {
+	key := fmt.Sprintf("%x", md5.Sum([]byte("ProductGet\n"+code)))
+	item, err := p.mem.Get(key)
+	if errors.Is(err, memcache.ErrCacheMiss) {
+		//inc miss counter
+	} else if err != nil {
+		logrus.Errorf("ProductGet, get from cache: %v", err.Error())
+		item = nil
+	}
+
+	if item != nil {
+		// inc hit counter
+		result := models.Product{}
+		err := result.UnmarshalBinary(item.Value)
+		if err != nil {
+			logrus.Errorf("ProductGet, error during parsing cache result result.UnmarshalBinary: %v", err.Error())
+		} else {
+			return result, nil
+		}
+	}
+
 	query, args, err := squirrel.Select("code, name").
 		From("products").
 		Where(squirrel.Eq{
@@ -102,11 +128,25 @@ func (p *postgres) ProductGet(ctx context.Context, code string) (models.Product,
 	}
 
 	if len(products) == 0 {
-		return models.Product{}, nil
+		emptyProduct := models.Product{}
+		value, err := emptyProduct.MarshalBinary()
+		if err != nil {
+			logrus.Errorf("ProductGet error during empty_product.MarshalBinary: %v", err.Error())
+		} else {
+			p.mem.Set(&memcache.Item{Key: key, Value: value, Expiration: config.CacheValidTime})
+		}
+		return emptyProduct, nil
 	}
 
 	if len(products) > 1 {
 		return models.Product{}, errors.Errorf("postgres.ProductGet: found mutiple producs with code %v", code)
+	}
+
+	value, err := products[0].MarshalBinary()
+	if err != nil {
+		logrus.Errorf("ProductGet error during products[0].MarshalBinary: %v", err.Error())
+	} else {
+		p.mem.Set(&memcache.Item{Key: key, Value: value, Expiration: config.CacheValidTime})
 	}
 
 	return products[0], nil
@@ -134,6 +174,9 @@ func (p *postgres) ProductCreate(ctx context.Context, product models.Product) er
 	if err != nil {
 		return errors.Wrapf(err, "postgres.ProductCreate: to query:")
 	}
+
+	key := "ProductGet\n" + product.Code
+	p.mem.Delete(key) // invalidate cache if exists
 
 	return nil
 }
@@ -199,6 +242,26 @@ func (p *postgres) PriceHistory(ctx context.Context, code string) (models.PriceH
 		return nil, errors.Wrapf(error_codes.ErrProductNotExist, "postgres.PriceHistory")
 	}
 
+	key := fmt.Sprintf("%x", md5.Sum([]byte("PriceHistory\n"+code)))
+	item, err := p.mem.Get(key)
+	if errors.Is(err, memcache.ErrCacheMiss) {
+		//inc miss counter
+	} else if err != nil {
+		logrus.Errorf("PriceHistory, get from cache: %v", err.Error())
+		item = nil
+	}
+
+	if item != nil {
+		// inc hit counter
+		result := models.PriceHistory{}
+		err := result.UnmarshalBinary(item.Value)
+		if err != nil {
+			logrus.Errorf("PriceHistory, error during parsing cache result result.UnmarshalBinary: %v", err.Error())
+		} else {
+			return result, nil
+		}
+	}
+
 	query, args, err := squirrel.Select("price, date").
 		From("price_history").
 		Where(squirrel.Eq{
@@ -215,6 +278,13 @@ func (p *postgres) PriceHistory(ctx context.Context, code string) (models.PriceH
 	err = pgxscan.Select(ctx, p.pool, &priceHistory, query, args...)
 	if err != nil {
 		return nil, errors.Wrapf(err, "postgres.PriceHistory: to query")
+	}
+
+	value, err := priceHistory.MarshalBinary()
+	if err != nil {
+		logrus.Errorf("PriceHistory error during priceHistory.MarshalBinary: %v", err.Error())
+	} else {
+		p.mem.Set(&memcache.Item{Key: key, Value: value, Expiration: config.CacheValidTime})
 	}
 
 	return priceHistory, nil

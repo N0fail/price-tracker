@@ -69,3 +69,9 @@ up_kafka:
 	docker-compose up -d kafka-2
 	docker-compose up -d kafka-1
 	docker-compose up -d kafka-ui
+
+.PHONY: up_mem
+mem:
+	docker-compose build
+	docker-compose up -d memcached
+

@@ -1,10 +1,19 @@
 package models
 
 import (
+	"encoding/json"
 	"strings"
 )
 
 type PriceHistory []PriceTimeStamp
+
+func (p PriceHistory) MarshalBinary() ([]byte, error) {
+	return json.Marshal(p)
+}
+
+func (p *PriceHistory) UnmarshalBinary(data []byte) error {
+	return json.Unmarshal(data, p)
+}
 
 func (p PriceHistory) Copy() PriceHistory {
 	res := make(PriceHistory, len(p), len(p))

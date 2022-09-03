@@ -39,6 +39,10 @@ func (c *command) Process(cmdArgs string) string {
 		return error_codes.ErrNameTooShortError.Error()
 	}
 
+	if strings.ContainsAny(params[0], config.InvalidCodeSymbols) {
+		return error_codes.ErrCodeWithInvalidSymbol.Error()
+	}
+
 	err := c.product.ProductCreate(ctx, models.Product{
 		Code: params[0],
 		Name: params[1],

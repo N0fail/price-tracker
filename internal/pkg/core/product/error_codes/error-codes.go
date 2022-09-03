@@ -3,13 +3,14 @@ package error_codes
 import "github.com/pkg/errors"
 
 var (
-	ErrExternalProblem   = errors.New("Some problem occured")
-	ErrNameTooShortError = errors.New("name is too short")
-	ErrNegativePrice     = errors.New("price should be positive")
-	ErrProductNotExist   = errors.New("product does not exist")
-	ErrProductExists     = errors.New("product exists")
-	ErrEmptyCode         = errors.New("product code can't be empty")
-	ErrNoEntries         = errors.New("no entries in given bounds")
+	ErrExternalProblem       = errors.New("Some problem occured")
+	ErrNameTooShortError     = errors.New("name is too short")
+	ErrCodeWithInvalidSymbol = errors.New("code contains invalid symbol")
+	ErrNegativePrice         = errors.New("price should be positive")
+	ErrProductNotExist       = errors.New("product does not exist")
+	ErrProductExists         = errors.New("product exists")
+	ErrEmptyCode             = errors.New("product code can't be empty")
+	ErrNoEntries             = errors.New("no entries in given bounds")
 )
 
 func GetInternal(err error) error {
@@ -30,6 +31,9 @@ func GetInternal(err error) error {
 	}
 	if errors.Is(err, ErrNoEntries) {
 		return ErrNoEntries
+	}
+	if errors.Is(err, ErrCodeWithInvalidSymbol) {
+		return ErrCodeWithInvalidSymbol
 	}
 	return ErrExternalProblem
 }

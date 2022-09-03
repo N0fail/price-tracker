@@ -1,14 +1,23 @@
 package models
 
 import (
+	"encoding/json"
 	"fmt"
 	"gitlab.ozon.dev/N0fail/price-tracker/internal/config"
 	"time"
 )
 
 type PriceTimeStamp struct {
-	Price float64   `db:"price"`
-	Date  time.Time `db:"date"`
+	Price float64   `db,json:"price"`
+	Date  time.Time `db,json:"date"`
+}
+
+func (p PriceTimeStamp) MarshalBinary() ([]byte, error) {
+	return json.Marshal(p)
+}
+
+func (p *PriceTimeStamp) UnmarshalBinary(data []byte) error {
+	return json.Unmarshal(data, p)
 }
 
 func (p PriceTimeStamp) String() string {
