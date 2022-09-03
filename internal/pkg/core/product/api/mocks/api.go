@@ -93,10 +93,10 @@ func (mr *MockInterfaceMockRecorder) ProductDelete(ctx, code interface{}) *gomoc
 }
 
 // ProductList mocks base method.
-func (m *MockInterface) ProductList(ctx context.Context, pageNumber, resultsPerPage uint32, orderBy string) ([]models.ProductSnapshot, error) {
+func (m *MockInterface) ProductList(ctx context.Context, pageNumber, resultsPerPage uint32, orderBy string) (models.ProductSnapshots, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "ProductList", ctx, pageNumber, resultsPerPage, orderBy)
-	ret0, _ := ret[0].([]models.ProductSnapshot)
+	ret0, _ := ret[0].(models.ProductSnapshots)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }

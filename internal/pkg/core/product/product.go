@@ -39,7 +39,7 @@ func (c *core) ProductDelete(ctx context.Context, code string) error {
 	return c.storage.ProductDelete(ctx, code)
 }
 
-func (c *core) ProductList(ctx context.Context, pageNumber, resultsPerPage uint32, orderBy string) ([]models.ProductSnapshot, error) {
+func (c *core) ProductList(ctx context.Context, pageNumber, resultsPerPage uint32, orderBy string) (models.ProductSnapshots, error) {
 	return c.storage.ProductList(ctx, pageNumber, resultsPerPage, orderBy)
 }
 

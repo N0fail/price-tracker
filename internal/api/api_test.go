@@ -101,7 +101,7 @@ func TestProductListApi(t *testing.T) {
 		productPrice := models.PriceTimeStamp{Price: 322, Date: date}
 
 		p.product.EXPECT().
-			ProductList(gomock.Any(), pageNumber, resultsPerPage, orderBy).Return([]models.ProductSnapshot{{
+			ProductList(gomock.Any(), pageNumber, resultsPerPage, orderBy).Return(models.ProductSnapshots{{
 			Code:      productCode,
 			Name:      productName,
 			LastPrice: productPrice,
@@ -137,7 +137,7 @@ func TestProductListApi(t *testing.T) {
 		productPrice := models.PriceTimeStamp{Price: 777, Date: date}
 
 		p.product.EXPECT().
-			ProductList(gomock.Any(), pageNumber, resultsPerPage, orderBy).Return([]models.ProductSnapshot{{
+			ProductList(gomock.Any(), pageNumber, resultsPerPage, orderBy).Return(models.ProductSnapshots{{
 			Code:      productCode,
 			Name:      productName,
 			LastPrice: productPrice,
@@ -171,7 +171,7 @@ func TestProductListApi(t *testing.T) {
 		productCode, productName := "789", "asdf"
 
 		p.product.EXPECT().
-			ProductList(gomock.Any(), pageNumber, resultsPerPage, orderBy).Return([]models.ProductSnapshot{{
+			ProductList(gomock.Any(), pageNumber, resultsPerPage, orderBy).Return(models.ProductSnapshots{{
 			Code:      productCode,
 			Name:      productName,
 			LastPrice: models.EmptyPriceTimeStamp,

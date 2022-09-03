@@ -30,7 +30,7 @@ type cache struct {
 	poolCh       chan struct{}
 }
 
-func (c *cache) ProductList(ctx context.Context, pageNumber, resultsPerPage uint32, orderBy string) ([]models.ProductSnapshot, error) {
+func (c *cache) ProductList(ctx context.Context, pageNumber, resultsPerPage uint32, orderBy string) (models.ProductSnapshots, error) {
 	c.poolCh <- struct{}{}
 	defer func() {
 		<-c.poolCh
@@ -58,7 +58,7 @@ func (c *cache) ProductList(ctx context.Context, pageNumber, resultsPerPage uint
 		}
 	})
 
-	res := make([]models.ProductSnapshot, 0, resultsPerPage)
+	res := make(models.ProductSnapshots, 0, resultsPerPage)
 	for i := from; i < to; i++ {
 		if i >= uint32(len(allProducts)) {
 			break

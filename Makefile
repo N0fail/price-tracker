@@ -34,6 +34,7 @@ up_db:
 	docker-compose build
 	docker-compose up -d postgres
 	docker-compose up -d memcached
+	docker-compose up -d redis
 
 .PHONY: up_db_test
 up_db_test:

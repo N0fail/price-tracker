@@ -4,7 +4,9 @@ import (
 	"context"
 	"encoding/json"
 	"github.com/Shopify/sarama"
+	"github.com/go-redis/redis/v8"
 	"github.com/sirupsen/logrus"
+	internalConfig "gitlab.ozon.dev/N0fail/price-tracker/internal/config"
 	"gitlab.ozon.dev/N0fail/price-tracker/internal/kafka/config"
 	"gitlab.ozon.dev/N0fail/price-tracker/internal/kafka/counter"
 	"gitlab.ozon.dev/N0fail/price-tracker/internal/pkg/core/product/api"
@@ -19,6 +21,7 @@ type IncomeHandler struct {
 	productApi      api.Interface
 	requestsCounter *counter.Counter
 	errorsCounter   *counter.Counter
+	redisClient     *redis.Client
 }
 
 func (i *IncomeHandler) Setup(sarama.ConsumerGroupSession) error {
@@ -138,14 +141,39 @@ func (h *ProductListHandler) ConsumeClaim(session sarama.ConsumerGroupSession, c
 			orderBy = "code"
 		}
 
-		_, err = h.productApi.ProductList(context.Background(), request.PageNumber, request.ResultsPerPage, orderBy)
+		productSnapShots, err := h.productApi.ProductList(context.Background(), request.PageNumber, request.ResultsPerPage, orderBy)
 		if err != nil {
 			h.errorsCounter.Inc()
 			logrus.Errorf("PriceTimeStampAddHandler PriceTimeStampAdd error: %v", err.Error())
 			return err
 		}
 
-		// TODO write result to redis
+		result := make([]*pb.ProductSnapShot, 0, len(productSnapShots))
+		for _, productSnapShot := range productSnapShots {
+			var priceTimeStamp *pb.PriceTimeStamp
+			if !productSnapShot.LastPrice.IsEmpty() {
+				priceTimeStamp = &pb.PriceTimeStamp{
+					Price: productSnapShot.LastPrice.Price,
+					Ts:    productSnapShot.LastPrice.Date.Unix(),
+				}
+			}
+
+			result = append(result, &pb.ProductSnapShot{
+				Code:           productSnapShot.Code,
+				Name:           productSnapShot.Name,
+				PriceTimeStamp: priceTimeStamp,
+			})
+		}
+
+		message, err := json.Marshal(pb.ProductListResponse{
+			ProductSnapShots: result,
+		})
+
+		if err != nil {
+			logrus.Errorf("PriceHistoryHandler json.Marshal error: %v", err.Error())
+			return err
+		}
+		h.redisClient.Publish(context.Background(), config.ProductListTopic, message)
 
 		logrus.Infof("ProductListHandler success ProductList PageNumber: %v, ResultsPerPage: %v, orderBy: %v", request.PageNumber, request.ResultsPerPage, orderBy)
 	}
@@ -167,14 +195,30 @@ func (h *PriceHistoryHandler) ConsumeClaim(session sarama.ConsumerGroupSession, 
 			continue
 		}
 
-		_, err = h.productApi.PriceHistory(context.Background(), request.Code)
+		priceHistory, err := h.productApi.PriceHistory(context.Background(), request.Code)
 		if err != nil {
 			h.errorsCounter.Inc()
 			logrus.Errorf("PriceHistoryHandler PriceHistory error: %v", err.Error())
 			return err
 		}
 
-		// TODO write result to redis
+		result := make([]*pb.PriceTimeStamp, 0, len(priceHistory))
+		for _, priceTimeStamp := range priceHistory {
+			result = append(result, &pb.PriceTimeStamp{
+				Price: priceTimeStamp.Price,
+				Ts:    priceTimeStamp.Date.Unix(),
+			})
+		}
+
+		message, err := json.Marshal(pb.PriceHistoryResponse{
+			PriceHistory: result,
+		})
+
+		if err != nil {
+			logrus.Errorf("PriceHistoryHandler json.Marshal error: %v", err.Error())
+			return err
+		}
+		h.redisClient.Publish(context.Background(), config.PriceHistoryTopic, message)
 
 		logrus.Infof("PriceHistoryHandler success PriceHistory code: %v", request.Code)
 	}
@@ -201,6 +245,11 @@ func Run(productApi api.Interface) {
 	ctx := context.Background()
 	requestsCounter := counter.New("requestsCounter")
 	errorsCounter := counter.New("errorsCounter")
+	redisClient := redis.NewClient(&redis.Options{
+		Addr:     "localhost" + internalConfig.RedisPort,
+		Password: "",
+		DB:       0,
+	})
 
 	go startHandler(ctx, config.ProductCreateTopic, &ProductCreateHandler{
 		IncomeHandler{
@@ -231,6 +280,7 @@ func Run(productApi api.Interface) {
 			productApi:      productApi,
 			requestsCounter: requestsCounter,
 			errorsCounter:   errorsCounter,
+			redisClient:     redisClient,
 		},
 	})
 
@@ -239,6 +289,7 @@ func Run(productApi api.Interface) {
 			productApi:      productApi,
 			requestsCounter: requestsCounter,
 			errorsCounter:   errorsCounter,
+			redisClient:     redisClient,
 		},
 	})
 }

@@ -41,7 +41,7 @@ type DbConn interface {
 	QueryRow(ctx context.Context, sql string, optionsAndArgs ...interface{}) pgx.Row
 }
 
-func (p *postgres) ProductList(ctx context.Context, pageNumber, resultsPerPage uint32, orderBy string) ([]models.ProductSnapshot, error) {
+func (p *postgres) ProductList(ctx context.Context, pageNumber, resultsPerPage uint32, orderBy string) (models.ProductSnapshots, error) {
 	const query = `
 	SELECT products.code, products.name, last_price.price, last_price.date
 	FROM (SELECT *
@@ -68,7 +68,7 @@ func (p *postgres) ProductList(ctx context.Context, pageNumber, resultsPerPage u
 		return nil, error_codes.ErrNoEntries
 	}
 
-	result := make([]models.ProductSnapshot, 0)
+	result := make(models.ProductSnapshots, 0)
 	for {
 		values, _ := rows.Values()
 		var newSnapShot models.ProductSnapshot

@@ -1,11 +1,32 @@
 package models
 
-import "fmt"
+import (
+	"encoding/json"
+	"fmt"
+)
 
 type ProductSnapshot struct {
-	Code      string
-	Name      string
-	LastPrice PriceTimeStamp
+	Code      string         `json:"code"`
+	Name      string         `json:"name"`
+	LastPrice PriceTimeStamp `json:"last_price"`
+}
+
+type ProductSnapshots []ProductSnapshot
+
+func (p ProductSnapshot) MarshalBinary() ([]byte, error) {
+	return json.Marshal(p)
+}
+
+func (p *ProductSnapshot) UnmarshalBinary(data []byte) error {
+	return json.Unmarshal(data, p)
+}
+
+func (p ProductSnapshots) MarshalBinary() ([]byte, error) {
+	return json.Marshal(p)
+}
+
+func (p *ProductSnapshots) UnmarshalBinary(data []byte) error {
+	return json.Unmarshal(data, p)
 }
 
 func (p ProductSnapshot) String() string {

@@ -4,8 +4,8 @@ const (
 	ProductCreateTopic     = "product_create_topic"
 	ProductDeleteTopic     = "product_delete_topic"
 	PriceTimeStampAddTopic = "price_time_stamp_add_topic"
-	ProductListTopic       = "product_list_topic"
-	PriceHistoryTopic      = "price_history_topic"
+	ProductListTopic       = "product_list_topic"  // также является названием канала, куда публикуются результаты запросов
+	PriceHistoryTopic      = "price_history_topic" // также является названием канала, куда публикуются результаты запросов
 )
 
 var (

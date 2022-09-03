@@ -600,7 +600,7 @@ func TestProductList(t *testing.T) {
 		orderBy := "code"
 		pageNumber, resultsPerPage := 1, 10
 		limit, offset := resultsPerPage, pageNumber*resultsPerPage
-		for _, listVariant := range [][]models.ProductSnapshot{
+		for _, listVariant := range []models.ProductSnapshots{
 			{
 				models.ProductSnapshot{Code: "1", Name: "1n", LastPrice: models.PriceTimeStamp{Price: 1, Date: time.Unix(1, 1)}},
 				models.ProductSnapshot{Code: "2", Name: "2n", LastPrice: models.EmptyPriceTimeStamp},

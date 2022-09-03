@@ -255,7 +255,7 @@ func TestProductListDb(t *testing.T) {
 
 		//assert
 		require.NoError(t, err)
-		require.Equal(t, []models.ProductSnapshot{productSnapshot1}, list)
+		require.Equal(t, models.ProductSnapshots{productSnapshot1}, list)
 	})
 
 	t.Run("success 2 entries: no price + price", func(t *testing.T) {
@@ -300,7 +300,7 @@ func TestProductListDb(t *testing.T) {
 
 		//assert
 		require.NoError(t, err)
-		require.Equal(t, []models.ProductSnapshot{productSnapshot1, productSnapshot2}, list)
+		require.Equal(t, models.ProductSnapshots{productSnapshot1, productSnapshot2}, list)
 	})
 
 	t.Run("success 1 entry order by code", func(t *testing.T) {
@@ -345,7 +345,7 @@ func TestProductListDb(t *testing.T) {
 
 		//assert
 		require.NoError(t, err)
-		require.Equal(t, []models.ProductSnapshot{productSnapshot1}, list)
+		require.Equal(t, models.ProductSnapshots{productSnapshot1}, list)
 	})
 
 	t.Run("success 1 entry order by name", func(t *testing.T) {
@@ -390,7 +390,7 @@ func TestProductListDb(t *testing.T) {
 
 		//assert
 		require.NoError(t, err)
-		require.Equal(t, []models.ProductSnapshot{productSnapshot2}, list)
+		require.Equal(t, models.ProductSnapshots{productSnapshot2}, list)
 	})
 
 	t.Run("error no entries in given range", func(t *testing.T) {

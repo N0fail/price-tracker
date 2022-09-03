@@ -138,3 +138,8 @@ services:
     image: memcached
     ports:
       - "11211:11211"
+
+  redis:
+    image: redis:7.0
+    ports:
+      - "6379:6379"
